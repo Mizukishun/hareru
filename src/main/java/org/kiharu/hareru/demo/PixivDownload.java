@@ -18,7 +18,7 @@ public class PixivDownload {
      * 下载Pixiv图片
      */
     public void downloadDemo() {
-        String url = "https://i.pximg.net/img-original/img/2018/01/08/00/01/09/66697354_p0.png";
+        String url = "https://i.pximg.net/img-original/img/2020/03/22/00/52/23/80273312_p0.jpg";
 
         String fileName = getFileNameFromUrl(url);
         String fileDir = "F:/PixivDemo/";
