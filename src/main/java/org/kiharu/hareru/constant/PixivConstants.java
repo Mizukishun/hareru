@@ -1,5 +1,9 @@
 package org.kiharu.hareru.constant;
 
+import org.kiharu.hareru.util.PixivUtils;
+
+import java.io.File;
+
 public class PixivConstants {
 
     /**
@@ -7,6 +11,11 @@ public class PixivConstants {
      * TODO--之后需要改成可自动选择拥有最大剩余容量的硬盘
      */
     public static String PICTURE_SAVE_DIR = "F:/PixivDemo/";
+
+    /**
+     * 保存下载的Pixiv图片的最顶层文件夹名称
+     */
+    public static String PICTURE_SAVE_TOP_FOLDER_NAME = "PixivDownload";
 
     /**
      * 为了获取图片原始大图地址，需要先请求这个地址的信息，后面接pixivId
@@ -26,5 +35,7 @@ public class PixivConstants {
      */
     public static String PIXIV_ILLUST_RECOMMEND_PREFIX = "https://www.pixiv.net/ajax/illust/";
     public static String PIXIV_ILLUST_RECOMMEND_SUFFIX = "/recommend/init?limit=18";
+
+    public static File savedPicFolder = PixivUtils.getSavedPicFolder();
 
 }

@@ -16,4 +16,9 @@ public class PixivUtilsTest {
         log.info("测试解析URL的结果BO:\n{}", JSON.toJSONString(bo));
         Assert.isTrue(bo.getPixivId().equals("80273312"), "解析URL失败");
     }
+
+    @Test
+    public void testGetSavedPicFolder() {
+        PixivUtils.getSavedPicFolder();
+    }
 }

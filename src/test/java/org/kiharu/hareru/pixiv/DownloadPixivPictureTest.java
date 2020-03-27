@@ -5,11 +5,12 @@ import org.junit.jupiter.api.Test;
 public class DownloadPixivPictureTest {
 
     @Test
-    public void testGetUrlFromArtworksByPixivId() {
-        String pixivId = "72497087";
+    public void testDownloadPixivPicture() {
+        String url = "https://i.pximg.net/img-original/img/2015/01/11/18/25/43/48119465_p0.jpg";
         DownloadPixivPicture downloadPixivPicture = new DownloadPixivPicture();
-        downloadPixivPicture.downloadRecommendPictureByPixivId(pixivId);
+        downloadPixivPicture.downloadPixivPicture(url);
     }
+
 
     @Test
     public void testDownloadPictureByPixivId() {

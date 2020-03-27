@@ -55,7 +55,7 @@ public class DownloadPixivPicture {
                 }
                 savedPicFile.createNewFile();
             }*/
-            File savedPicFile = PixivUtils.getSavePicFile(url);
+            File savedPicFile = PixivUtils.getSavedPicFile(url);
             FileOutputStream fileOutputStream = new FileOutputStream(savedPicFile);
 
             // 将网络图片保存到本地文件中
