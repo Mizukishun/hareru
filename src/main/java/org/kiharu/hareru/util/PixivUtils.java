@@ -3,20 +3,21 @@ package org.kiharu.hareru.util;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.Headers;
 import org.apache.commons.lang3.StringUtils;
-import org.kiharu.hareru.bo.PixivAjaxIllustRecommendRespBO;
-import org.kiharu.hareru.bo.PixivAjaxIllustRecommendRespBodyBO;
+import org.kiharu.hareru.bo.PixivPictureUrlInfoBO;
 import org.kiharu.hareru.constant.PixivConstants;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
  * 用于处理Pixiv图片的相关工具类
  */
+@Slf4j
 public class PixivUtils {
 
     /**
@@ -63,7 +64,7 @@ public class PixivUtils {
     /**
      * 保存图片的完整路径名，指定到具体文件
      * 获取到的文件路径名格式为：
-     * D:/pixivDemo/{date}/{pictureName}
+     * D:/pixivDemo/{date}/{pixivId}
      * TODO--总感觉目前这样不大灵活，看情况之后修改吧！
      * @param url
      * @return
@@ -79,7 +80,6 @@ public class PixivUtils {
         Date today = new Date();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         String todayStr = format.format(today);
-
 
         int endIndex = url.length();
         if (url.contains("_p0")) {
@@ -101,6 +101,73 @@ public class PixivUtils {
     }
 
     /**
+     * 解析pixiv原始图片的url，获取对应的信息
+     * https://i.pximg.net/img-original/img/2020/03/22/00/52/23/80273312_p0.jpg
+     * @param url
+     * @return
+     */
+    public static PixivPictureUrlInfoBO getPixivPictureUrlInfoBO(String url) {
+        PixivPictureUrlInfoBO bo = new PixivPictureUrlInfoBO();
+        bo.setUrl(url);
+        if (StringUtils.isEmpty(url)) {
+            return bo;
+        }
+        if (!url.contains("/")) {
+            return bo;
+        }
+        if (!url.startsWith("https://")) {
+            return bo;
+        }
+
+        String[] splitUrl = url.split("/");
+
+        String pixivPicName = splitUrl[11];
+        // 获取图片类型后缀
+        int length = pixivPicName.length();
+        String suffix = pixivPicName.substring(pixivPicName.lastIndexOf("."), length);
+
+        // 获取pixivId
+        int endIndex;
+        if (pixivPicName.contains("_p0")) {
+            endIndex = pixivPicName.lastIndexOf("_p0");
+        } else {
+            endIndex = pixivPicName.lastIndexOf(".");
+        }
+        String pixivId = pixivPicName.substring(0, endIndex);
+
+        if (splitUrl.length != 12) {
+            log.error("解析原始图片url={}格式发现不是标准格式，请检查", url);
+            return bo;
+        }
+
+        // 原始图片域名
+        String host = splitUrl[3];
+
+        // 图片日期，组装成yyyyMMdd格式
+        StringBuilder date = new StringBuilder().append(splitUrl[5]).append(splitUrl[6]).append(splitUrl[7]);
+        // 图片时间，组装成hhmmss格式
+        StringBuilder time = new StringBuilder().append(splitUrl[8]).append(splitUrl[9]).append(splitUrl[10]);
+
+        bo.setPixivId(pixivId);
+        bo.setSuffix(suffix);
+        bo.setDate(date.toString());
+        bo.setTime(time.toString());
+
+        return bo;
+    }
+
+    /**
+     * 获取保存图片的文件，包含完整的路径名及文件
+     * @param url
+     * @return
+     */
+    public static File getSavePicFile(String url) {
+
+        return null;
+
+    }
+
+    /**
      * 从Pixiv的关联图片推荐接口返回的结果字符串中解析出其中所有推荐的图片pixivId
      * https://www.pixiv.net/ajax/illust/79759981/recommend/init?limit=18
      * @param respJSONStr
@@ -113,6 +180,7 @@ public class PixivUtils {
         }
 
 
+        // 解析返回结果
         JSONObject resp = JSON.parseObject(respJSONStr);
         JSONObject body = resp.getJSONObject("body");
         JSONArray illusts = body.getJSONArray("illusts");
@@ -135,35 +203,11 @@ public class PixivUtils {
         result.addAll(nextIdList);
 
         StringBuilder resultInfo = new StringBuilder()
-                .append("关联图片推荐接口返回的图片pixivIds总共有:").append(nextIdList.size()).append("个\n")
+                .append("关联图片推荐接口返回的图片pixivIds总共有:").append(result.size()).append("个\n")
                 .append("其中nextIds有：").append(nextIds.size()).append("个\n")
                 .append("其中illustIds有：").append(illustsIdList.size()).append("个\n")
                 .append("所有的pixivIds如下：\n")
                 .append(JSONObject.toJSONString(result));
-
-
-
-        /*
-        PixivAjaxIllustRecommendRespBO respBO = (PixivAjaxIllustRecommendRespBO)JSON.parse(respJSONStr);
-
-        if (respBO == null) {
-            System.out.println("解析关联图片推荐接口返回结果出错：respJSONStr=" + respJSONStr);
-        }
-        PixivAjaxIllustRecommendRespBodyBO bodyBO = respBO.getBody();
-
-        List<String> nextIds = bodyBO.getNextIds();
-        result.addAll(nextIds);
-
-        List<String> illustIds = bodyBO.getIllusts().stream().map(item -> item.getId()).collect(Collectors.toList());
-        result.addAll(illustIds);*/
-
-       /* StringBuilder resultInfo = new StringBuilder()
-                .append("关联图片推荐接口返回的图片pixivIds总共有:").append(result.size()).append("个\n")
-                .append("其中nextIds有：").append(nextIds.size()).append("个\n")
-                .append("其中illustIds有：").append(illustIds.size()).append("个\n")
-                .append("所有的pixivIds如下：\n")
-                .append(JSONObject.toJSONString(result));*/
-
 
         System.out.println(resultInfo);
 

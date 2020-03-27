@@ -8,7 +8,7 @@ public class DownloadPixivPictureTest {
     public void testGetUrlFromArtworksByPixivId() {
         String pixivId = "72497087";
         DownloadPixivPicture downloadPixivPicture = new DownloadPixivPicture();
-        downloadPixivPicture.getUrlFromArtworksByPixivId(pixivId);
+        downloadPixivPicture.downloadRecommendPictureByPixivId(pixivId);
     }
 
     @Test
@@ -22,6 +22,6 @@ public class DownloadPixivPictureTest {
     public void testGetPixivIdsFromAjaxIllustRecommend() {
         String pixivId = "79759981";
         DownloadPixivPicture downloadPixivPicture = new DownloadPixivPicture();
-        downloadPixivPicture.getPixivIdsFromAjaxIllustRecommend(pixivId);
+        downloadPixivPicture.downloadRecommendPictureByPixivId(pixivId);
     }
 }
