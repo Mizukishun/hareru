@@ -302,7 +302,7 @@ public class PixivUtils {
                 .append("所有的pixivIds如下：\n")
                 .append(JSONObject.toJSONString(result));
 
-        System.out.println(resultInfo);
+        log.info(resultInfo.toString());
 
         return result;
     }

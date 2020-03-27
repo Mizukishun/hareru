@@ -44,7 +44,8 @@ public class DownloadPixivPicture {
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                System.out.println("请求下载Pixiv图片失败，url=" + url);
+                //System.out.println("请求下载Pixiv图片失败，url=" + url);
+                log.error("请求下载Pixiv图片失败，url={}", url);
             }
             BufferedInputStream bufferedInputStream = new BufferedInputStream(response.body().byteStream());
 
@@ -78,13 +79,15 @@ public class DownloadPixivPicture {
      */
     public void downloadPictureByPixivId(String pixivId) {
         if (StringUtils.isEmpty(pixivId)) {
-            System.out.println("pixivId不能为空");
+            //System.out.println("pixivId不能为空");
+            log.error("downloadPictureByPixivId方法的入参pxivId不能为空");
         }
 
         // 先根据pixivId获取原始大图的地址
         String url = PixivPictureInfoUtil.getUrlFromArtworksByPixivId(pixivId);
         if (StringUtils.isEmpty(url)) {
-            System.out.println("获取原始大图地址出错：pixivId=" + pixivId + "\nurl=url");
+            //System.out.println("获取原始大图地址出错：pixivId=" + pixivId + "\nurl=url");
+            log.error("获取原始大图地址出错：\npixivId={}\nurl={}", pixivId, url);
         }
         // 根据原始大图地址将图片下载到本地
         downloadPixivPicture(url);
@@ -131,8 +134,51 @@ public class DownloadPixivPicture {
             }
         }
 
+        log.info("根据pixivIdList下载所关联推荐的所有图片的总数为：{},下载失败的图片数为：{}", recommendPixivIdSet.size(), errorPixivIdSet.size());
+
         // TODO--针对上面出错的再次尝试处理吗？
 
         return;
+    }
+
+    /**
+     * 根据pixivId下载其所关联推荐的所有图片，同时还要把所有关联推荐的图片它们所又关联推荐的图片也下载下来
+     * @param pixivId
+     */
+    public void downloadRecommendPicByPixivIdWithTwoDepth(String pixivId) {
+        List<String> initRecommendPixivIdList = PixivPictureInfoUtil.getPixivIdsFromAjaxIllustRecommend(pixivId);
+
+        Set<String> allRecommendPixivIdSet = new HashSet<>(1024);
+
+        // 首先把第一层关联推荐的保存下
+        allRecommendPixivIdSet.addAll(initRecommendPixivIdList);
+
+        // 把第二层关联推荐的都保存下
+        for (String recommendPixivId : initRecommendPixivIdList) {
+            try {
+                List<String> secondRecommendPixivIdList = PixivPictureInfoUtil.getPixivIdsFromAjaxIllustRecommend(recommendPixivId);
+
+                allRecommendPixivIdSet.addAll(secondRecommendPixivIdList);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        log.info("下载关联推荐图片(两层)的图片总数为：{}", allRecommendPixivIdSet.size());
+
+        // 下载错误的图片pixivId
+        Set<String> errorPixivSet = new HashSet<>(16);
+        // 下载所有关联推荐的图片
+        for (String pid : allRecommendPixivIdSet) {
+            try {
+                downloadPictureByPixivId(pid);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                errorPixivSet.add(pid);
+                continue;
+            }
+        }
+
+        log.info("下载关联推荐图片(两层)的图片总数为：{}，其中下载错误的数量有：{}", allRecommendPixivIdSet.size(), errorPixivSet.size());
     }
 }

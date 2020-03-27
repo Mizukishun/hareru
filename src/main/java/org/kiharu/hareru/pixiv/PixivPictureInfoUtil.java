@@ -50,7 +50,8 @@ public class PixivPictureInfoUtil {
         String result = "";
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                System.out.println("请求获取图片原始大图地址时出错，url=" + url);
+                //System.out.println("请求获取图片原始大图地址时出错，url=" + url);
+                log.error("请求获取图片原始大图地址时出错，url={}", url);
             }
             InputStream inputStream = response.body().byteStream();
             // 注意这里是压缩了的，所以这里通过GZIPInputStream进行解压转换
@@ -72,7 +73,7 @@ public class PixivPictureInfoUtil {
             StringBuilder sb = new StringBuilder()
                     .append("请求获取图片原始大图信息的返回结果为：\n")
                     .append(result);
-            System.out.println(sb.toString());
+            log.info(sb.toString());
 
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -104,7 +105,8 @@ public class PixivPictureInfoUtil {
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                System.out.println("请求推荐图片pixivIds失败,url=" + urlSB.toString());
+                //System.out.println("请求推荐图片pixivIds失败,url=" + urlSB.toString());
+                log.error("请求推荐图片pixivIds失败，url={}", urlSB.toString());
             }
             GZIPInputStream gzipInputStream = new GZIPInputStream(response.body().byteStream());
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(gzipInputStream, "UTF-8"));

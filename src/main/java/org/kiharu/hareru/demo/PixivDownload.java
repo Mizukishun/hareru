@@ -1,5 +1,6 @@
 package org.kiharu.hareru.demo;
 
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -12,6 +13,7 @@ import java.util.Map;
 /**
  * 初始的Pixiv图片下载
  */
+@Slf4j
 public class PixivDownload {
 
     /**
@@ -58,7 +60,7 @@ public class PixivDownload {
                 .build();
         try (Response response = okHttpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                System.out.println("失败");
+                log.info("失败");
             }
             InputStream respInputStream = response.body().byteStream();
             int b = 0;

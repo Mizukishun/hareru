@@ -1,14 +1,13 @@
 package org.kiharu.hareru.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.kiharu.hareru.pixiv.DownloadPixivPicture;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/pixiv")
 public class PixivDownloadController {
@@ -47,11 +46,22 @@ public class PixivDownloadController {
     }
 
     /**
+     * 根据pixivId下载其所关联推荐的所有图片(两层）
+     * @param pixivId
+     * @return
+     */
+    @PostMapping("/downloadRecommendPicByPixivIdWithTwoDepth")
+    public String downloadRecommendPicByPixivIdWithTwoDepth(@RequestParam("pixivId") String pixivId) {
+        downloadPixivPicture.downloadRecommendPicByPixivIdWithTwoDepth(pixivId);
+        return "SUCCESS";
+    }
+
+    /**
      * 测试Controller
      */
     @GetMapping("/test")
     public String test() {
-        System.out.println("测试Controller接口");
+        log.info("测试Controller接口");
         return "SUCCESS";
     }
 }
