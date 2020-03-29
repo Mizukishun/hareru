@@ -21,7 +21,7 @@ import java.util.Set;
  */
 @Slf4j
 @Service
-public class DownloadPixivPicture {
+public class PixivPictureDownloader {
 
     /**
      * 下载指定url的图片到本地

@@ -1,7 +1,7 @@
 package org.kiharu.hareru.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.kiharu.hareru.pixiv.DownloadPixivPicture;
+import org.kiharu.hareru.pixiv.PixivPictureDownloader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +13,7 @@ import java.util.List;
 public class PixivDownloadController {
 
     @Autowired
-    private DownloadPixivPicture downloadPixivPicture;
+    private PixivPictureDownloader pixivPictureDownloader;
 
     /**
      * 根据pixivId下载该图片
@@ -21,7 +21,7 @@ public class PixivDownloadController {
      */
     @GetMapping("/simpleDownloadByPixivId")
     public String simpleDownloadByPixivId(@RequestParam("pixivId") String pixivId) {
-        downloadPixivPicture.downloadPictureByPixivId(pixivId);
+        pixivPictureDownloader.downloadPictureByPixivId(pixivId);
         return "成功";
     }
 
@@ -31,7 +31,7 @@ public class PixivDownloadController {
      */
     @GetMapping("/downloadRecommendPictureByPixivId")
     public String downloadRecommendPictureByPixivId(@RequestParam("pixivId") String pixivId) {
-        downloadPixivPicture.downloadRecommendPictureByPixivId(pixivId);
+        pixivPictureDownloader.downloadRecommendPictureByPixivId(pixivId);
         return "SUCCESS";
     }
 
@@ -41,7 +41,7 @@ public class PixivDownloadController {
      */
     @GetMapping("/downloadRecommendPicturesByPixivIdList")
     public String downloadRecommendPicturesByPixivIdList(@RequestParam("pixivIdList") List<String> pixivIdList) {
-        downloadPixivPicture.downloadRecommendPictureByPixivIdList(pixivIdList);
+        pixivPictureDownloader.downloadRecommendPictureByPixivIdList(pixivIdList);
         return "SUCCESS";
     }
 
@@ -52,7 +52,7 @@ public class PixivDownloadController {
      */
     @PostMapping("/downloadRecommendPicByPixivIdWithTwoDepth")
     public String downloadRecommendPicByPixivIdWithTwoDepth(@RequestParam("pixivId") String pixivId) {
-        downloadPixivPicture.downloadRecommendPicByPixivIdWithTwoDepth(pixivId);
+        pixivPictureDownloader.downloadRecommendPicByPixivIdWithTwoDepth(pixivId);
         return "SUCCESS";
     }
 

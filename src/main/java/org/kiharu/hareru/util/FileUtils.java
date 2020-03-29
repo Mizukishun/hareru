@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 非Pixiv相关的工具类
  */
-public class HareruUtils {
+public class FileUtils {
 
     /**
      * 获取最大剩余容量的磁盘

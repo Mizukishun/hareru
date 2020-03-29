@@ -11,7 +11,6 @@ import org.kiharu.hareru.bo.PixivPictureUrlInfoBO;
 import org.kiharu.hareru.constant.PixivConstants;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -166,7 +165,7 @@ public class PixivUtils {
      */
     public static File getSavedPicFolder() {
         // 获取拥有最大剩余可用空间的磁盘
-        File maxUsableSpaceDisk = HareruUtils.getMaxUsableSpaceDiskFile();
+        File maxUsableSpaceDisk = FileUtils.getMaxUsableSpaceDiskFile();
 
 
         // 将路径中的反斜杠\替换成正斜杠/

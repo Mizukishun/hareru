@@ -128,7 +128,6 @@ public class PixivPictureInfoUtil {
 
     /**
      * 根据多个pixivId获取这些所关联推荐的所有图片pixivId
-     * 需要去重，并且包含这些pixivIdList本身
      * @param pixivIdList
      * @return
      */
