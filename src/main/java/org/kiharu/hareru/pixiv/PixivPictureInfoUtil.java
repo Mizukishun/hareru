@@ -31,6 +31,40 @@ import java.util.zip.GZIPInputStream;
 public class PixivPictureInfoUtil {
 
     /**
+     * 获取Pixiv的artworks接口的返回内容
+     * 接口地址样例：https://www.pixiv.net/artworks/76211609
+     * @param pixivId
+     * @return
+     */
+    public static String getRespHtmlFromArtworksInterface(String pixivId) {
+        String url = PixivConstants.PIXIV_ARTWORKS_PATH + pixivId;
+        Headers headers = PixivUtils.getArtworksHeaders();
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .headers(headers)
+                .url(url)
+                .build();
+
+        String respHtml = null;
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                log.error("请求pixiv的artworks接口返回结果时出错\nurl={}\nerrorInfo={}", url, response.message());
+                return null;
+            }
+
+            InputStream inputStream = response.body().byteStream();
+            // 注意这里的返回结果是压缩了的，所以这里通过GZIPInputStream进行解压转换
+            GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(gzipInputStream, "UTF-8"));
+            respHtml = bufferedReader.lines().collect(Collectors.joining());
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        return respHtml;
+    }
+
+    /**
      * 根据pixivId从artworks中获取的内容中提取出图片的原始大图地址
      * https://www.pixiv.net/artworks/76211609
      * @param pixivId
@@ -47,11 +81,12 @@ public class PixivPictureInfoUtil {
                 .url(url)
                 .build();
 
-        String result = "";
+        String result = null;
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 //System.out.println("请求获取图片原始大图地址时出错，url=" + url);
                 log.error("请求获取图片原始大图地址时出错，url={}", url);
+                return null;
             }
             InputStream inputStream = response.body().byteStream();
             // 注意这里是压缩了的，所以这里通过GZIPInputStream进行解压转换
