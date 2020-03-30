@@ -148,36 +148,63 @@ public class PixivInterfaceResultParser {
             log.error("artworks接口返回的content内部包含不止一个pixivId的数据，content内容为：\n{}", jsonContent);
         }
 
-        PixivArtworksInterfaceResultContentBO result = resultContentBOList.size() == 0 ? new PixivArtworksInterfaceResultContentBO() : resultContentBOList.get(0);
+        PixivArtworksInterfaceResultContentBO result = resultContentBOList.size() == 0 ? null : resultContentBOList.get(0);
 
-        // 作者信息放在这里进行提取
-        PixivPictureAuthorInfoBO authorInfoBO = new PixivPictureAuthorInfoBO();
+        if (result != null) {
+            // 作者信息放在这里进行提取
+            PixivPictureAuthorInfoBO authorInfoBO = new PixivPictureAuthorInfoBO();
 
-        for (Map.Entry<String, Object> entry : userInnerMap.entrySet()) {
-            JSONObject jsonUser = (JSONObject) entry.getValue();
+            for (Map.Entry<String, Object> entry : userInnerMap.entrySet()) {
+                JSONObject jsonUser = (JSONObject) entry.getValue();
 
-            authorInfoBO.setUserId(jsonUser.getString("userId"));
-            authorInfoBO.setUserName(jsonUser.getString("name"));
-            authorInfoBO.setImage(jsonUser.getString("image"));
-            authorInfoBO.setImageBig(jsonUser.getString("imageBig"));
-            authorInfoBO.setPremium(jsonUser.getBoolean("premium"));
-            authorInfoBO.setIsFollowed(jsonUser.getBoolean("isFollowed"));
-            authorInfoBO.setIsMypixiv(jsonUser.getBoolean("isMypixiv"));
-            authorInfoBO.setIsBlocking(jsonUser.getBoolean("isBlocking"));
-            authorInfoBO.setBackground(jsonUser.getString("background"));
-            authorInfoBO.setPartial(jsonUser.getInteger("partial"));
-            // 这里只取第一个，如果会出现两个作者userId的情况，则以后再处理吧
-            break;
+                authorInfoBO.setUserId(jsonUser.getString("userId"));
+                authorInfoBO.setUserName(jsonUser.getString("name"));
+                authorInfoBO.setImage(jsonUser.getString("image"));
+                authorInfoBO.setImageBig(jsonUser.getString("imageBig"));
+                authorInfoBO.setPremium(jsonUser.getBoolean("premium"));
+                authorInfoBO.setIsFollowed(jsonUser.getBoolean("isFollowed"));
+                authorInfoBO.setIsMypixiv(jsonUser.getBoolean("isMypixiv"));
+                authorInfoBO.setIsBlocking(jsonUser.getBoolean("isBlocking"));
+                authorInfoBO.setBackground(jsonUser.getString("background"));
+                authorInfoBO.setPartial(jsonUser.getInteger("partial"));
+                // 这里只取第一个，如果会出现两个作者userId的情况，则以后再处理吧
+                break;
+            }
+
+            result.setAuthorInfoBO(authorInfoBO);
         }
+
 
         // TODO--下面这里有点冗余了，看以后是否需要从这里拿到的作者这里获取其所有作品ID吧
         /*if (result.getPictureDetailInfoBO().getUserId().equals(authorInfoBO.getUserId())) {
             authorInfoBO.setUserIllusts(result.getPictureDetailInfoBO().getUserIllusts());
         }*/
 
-        result.setAuthorInfoBO(authorInfoBO);
-
         return result;
+    }
+
+
+    /**
+     * 从https://www.pixiv.net/ajax/illust/80391469/pages接口返回结果中解析出多张图片的原始大图地址
+     * 返回结果内容可参见“sample/ajax-illust-80391469-pages接口返回结果样例.txt”
+     * @param respJSONStr 上面接口返回的JSON格式的字符串
+     * @return
+     */
+    public static List<String> getUrlsFromAjaxIllustPageInterfaceResult(String respJSONStr) {
+        JSONObject respJSON = JSONObject.parseObject(respJSONStr);
+        JSONArray body = respJSON.getJSONArray("body");
+
+        List<String> originalUrls = new ArrayList<>(8);
+
+        for (int i = 0; i < body.size(); ++i) {
+            JSONObject element = body.getJSONObject(i);
+            JSONObject urls = element.getJSONObject("urls");
+            String originalUrl = urls.getString("original");
+            originalUrls.add(originalUrl);
+            // TODO--这里其实还可以获取原始图片的width、height、thumb_mini、small、regular等信息的，之后看需要再补充
+        }
+
+        return originalUrls;
     }
 
 }

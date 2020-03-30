@@ -8,6 +8,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.kiharu.hareru.bo.PixivArtworksInterfaceResultContentBO;
+import org.kiharu.hareru.bo.PixivPictureDetailInfoBO;
 import org.kiharu.hareru.util.PixivUtils;
 import org.springframework.stereotype.Service;
 
@@ -74,7 +76,7 @@ public class PixivPictureDownloader {
 
 
     /**
-     * 根据pixivId下载图片
+     * 根据pixivId下载其对应的一张图片
      * @param pixivId
      */
     public void downloadPictureByPixivId(String pixivId) {
@@ -94,12 +96,52 @@ public class PixivPictureDownloader {
     }
 
     /**
+     * 根据pixivId下载其对应的可能的多张图片
+     * TODO--需要测试下如果pixivId本来就只对应一张图片，下面这里能否请求获取到该唯一一张图片的原始大图地址
+     * @param pixivId
+     */
+    public void downloadMultiPicturesByPixivId(String pixivId) {
+        List<String> urls = PixivPictureInfoUtil.getUrlsFromAjaxIllustPagesByPixivId(pixivId);
+
+        for (String url : urls) {
+            try {
+                downloadPixivPicture(url);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                continue;
+            }
+        }
+    }
+
+    /**
+     * 下载pixivId对应的所有图片，可能只有一张，也可能有多张
+     * 综合了上面downloadPictureByPixivId和downloadMultiPicturesByPixivId方法的
+     * @param pixivId
+     */
+    public void downloadAllPicturesByPixivId(String pixivId) {
+        String respHtml = PixivPictureInfoUtil.getRespHtmlFromArtworksInterface(pixivId);
+        String content = PixivInterfaceResultParser.getArtworksResultContent(respHtml);
+        PixivArtworksInterfaceResultContentBO resultContentBO = PixivInterfaceResultParser.parseArtworksResult(content);
+        if (resultContentBO == null || resultContentBO.getPictureDetailInfoBO() == null) {
+            return;
+        }
+        PixivPictureDetailInfoBO detailInfoBO = resultContentBO.getPictureDetailInfoBO();
+        Integer pageCount = detailInfoBO.getPageCount();
+        if (pageCount.equals(1)) {
+            // TODO--需要测试看能否不用这个方法，也即如果下面的downloadMultiPicturesByPixivId也能下载只有一张图片的话，这里就不需要了
+            downloadPictureByPixivId(pixivId);
+        } else {
+            downloadMultiPicturesByPixivId(pixivId);
+        }
+    }
+
+
+    /**
      * 下载所有根据pixivId而推荐的图片（一层）
      * @param pixivId
      */
     public void downloadRecommendPictureByPixivId(String pixivId) {
         List<String> pixivIdList = PixivPictureInfoUtil.getPixivIdsFromAjaxIllustRecommend(pixivId);
-
 
         pixivIdList.forEach(recommendPixivId -> {
             downloadPictureByPixivId(recommendPixivId);
@@ -180,5 +222,23 @@ public class PixivPictureDownloader {
         }
 
         log.info("下载关联推荐图片(两层)的图片总数为：{}，其中下载错误的数量有：{}", allRecommendPixivIdSet.size(), errorPixivSet.size());
+    }
+
+    /**
+     * 根据pixivId下载其关联推荐的图片，以及所有推荐图片的作者的所有作品
+     * @param pixivId
+     */
+    public void downloadRecommendPicAndAuthorWorksByPixivId(String pixivId) {
+        // 获取所有推荐图片作者的所有作品图片pixiId
+        List<String> pixivIds = PixivPictureInfoUtil.getPixivIdsFromRecommendPicAuthorsWorksByPixivId(pixivId);
+
+        for (String tempPixivId : pixivIds) {
+            try {
+                downloadAllPicturesByPixivId(tempPixivId);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                continue;
+            }
+        }
     }
 }

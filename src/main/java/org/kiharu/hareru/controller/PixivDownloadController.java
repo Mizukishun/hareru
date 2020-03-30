@@ -57,6 +57,17 @@ public class PixivDownloadController {
     }
 
     /**
+     * 根据pixivId下载其关联推荐的所有图片的作者的所有作品图片（一层）
+     * @param pixivId
+     * @return
+     */
+    @PostMapping("/downloadRecommendPicAndAuthorWorksByPixivId")
+    public String downloadRecommendPicAndAuthorWorksByPixivId(@RequestParam("pixivId") String pixivId) {
+        pixivPictureDownloader.downloadRecommendPicAndAuthorWorksByPixivId(pixivId);
+        return "SUCCESS";
+    }
+
+    /**
      * 测试Controller
      */
     @GetMapping("/test")

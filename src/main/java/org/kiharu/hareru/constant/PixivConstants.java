@@ -36,6 +36,16 @@ public class PixivConstants {
     public static String PIXIV_ILLUST_RECOMMEND_PREFIX = "https://www.pixiv.net/ajax/illust/";
     public static String PIXIV_ILLUST_RECOMMEND_SUFFIX = "/recommend/init?limit=18";
 
+    /**
+     * 获取图片保存的目录路径（只在项目初始化之后设置一次）
+     */
     public static File savedPicFolder = PixivUtils.getSavedPicFolder();
+
+    /**
+     * 根据pixivId获取其对应的多张图片原始大图地址的接口地址
+     * https://www.pixiv.net/ajax/illust/80391469/pages
+     */
+    public static String PIXIV_AJAX_ILLUST_PAGES_PREFIX = "https://www.pixiv.net/ajax/illust/";
+    public static String PIXIV_AJAX_ILLUST_PAGES_SUFFIX = "/pages";
 
 }
