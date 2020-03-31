@@ -179,7 +179,7 @@ public class PixivPictureInfoUtils {
         List<String> recommendPixivIds = getPixivIdsFromAjaxIllustRecommend(pixivId);
         // 获取所有推荐图片的作者的所有作品图片的pixivId
         for (String recommendPixivId : recommendPixivIds) {
-            List<String> authorWorksPixivIdList = getPixivIdsFromAuthorAllWorksByPixivId(pixivId);
+            List<String> authorWorksPixivIdList = getPixivIdsFromAuthorAllWorksByPixivId(recommendPixivId);
             result.addAll(authorWorksPixivIdList);
         }
         return result;

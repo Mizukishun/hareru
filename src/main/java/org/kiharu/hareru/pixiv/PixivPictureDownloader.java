@@ -272,9 +272,11 @@ public class PixivPictureDownloader {
         // 获取所有推荐图片作者的所有作品图片pixiId
         Set<String> pixivIds = PixivPictureInfoUtils.getPixivIdsFromRecommendPicAuthorsWorksByPixivId(pixivId);
 
-        log.info("请求获取到的所有图片pixivId数量为：{}", pixivIds.size());
+        //log.info("请求获取到的所有图片pixivId数量为：{}", pixivIds.size());
 
         List<String> errorPixivIds = new ArrayList<>();
+
+        log.info("根据pixivId={}获取到的推荐图片的所有作者的所有作品数量总数为：{}", pixivId, pixivIds.size());
 
         for (String tempPixivId : pixivIds) {
             try {
