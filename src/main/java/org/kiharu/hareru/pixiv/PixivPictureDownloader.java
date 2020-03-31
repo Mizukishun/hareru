@@ -10,10 +10,12 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kiharu.hareru.bo.PixivArtworksInterfaceResultContentBO;
 import org.kiharu.hareru.bo.PixivPictureDetailInfoBO;
+import org.kiharu.hareru.util.PixivHeadersUtils;
 import org.kiharu.hareru.util.PixivUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,13 +32,12 @@ public class PixivPictureDownloader {
      * @param url
      */
     public void downloadPixivPicture(String url) {
-
-        // 首先构建保存图片的文件
-        //String filePath = PixivUtils.getCompletedFilePath(url);
-        //File savedPicFile = new File(filePath);
+        // TODO--测试用，之后删除
+        long begin = System.currentTimeMillis();
+        long stage1 = 0, stage2 = 0, stage3 = 0, stage4 = 0, stage5 = 0;
 
         // 构建请求头
-        Headers headers = PixivUtils.getHeaders();
+        Headers headers = PixivHeadersUtils.getSimpleHeaders();
 
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
@@ -44,55 +45,90 @@ public class PixivPictureDownloader {
                 .url(url)
                 .build();
 
+        // TODO--测试用，之后删除
+        stage1 = System.currentTimeMillis();
+        // 请求获取图片数据
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                //System.out.println("请求下载Pixiv图片失败，url=" + url);
                 log.error("请求下载Pixiv图片失败，url={}", url);
+                // TODO--待确认这里是否适合放return语句
+                return;
             }
+            // TODO--测试用，之后删除
+            stage2 = System.currentTimeMillis();
             BufferedInputStream bufferedInputStream = new BufferedInputStream(response.body().byteStream());
 
-            /*if (!savedPicFile.exists()) {
-                // 防止父路径不存在
-                if (!savedPicFile.getParentFile().exists()) {
-                    savedPicFile.getParentFile().mkdirs();
-                }
-                savedPicFile.createNewFile();
-            }*/
             File savedPicFile = PixivUtils.getSavedPicFile(url);
-            FileOutputStream fileOutputStream = new FileOutputStream(savedPicFile);
+            FileOutputStream fileOutputStream = new FileOutputStream(savedPicFile, true);
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
 
-            // 将网络图片保存到本地文件中
+
+            // TODO--测试用，之后删除
+            stage3 = System.currentTimeMillis();
+            // TODO--经测试，下面这里太慢了，之后看有没有啥办法提升下这里的处理速度
+            // 将网络图片数据保存到本地文件中
             int b = 0;
             while ((b = bufferedInputStream.read()) != -1) {
-                fileOutputStream.write(b);
+                bufferedOutputStream.write(b);
             }
+            /*byte[] bytes = new byte[2048];
+            int length = 0;
+            int off = 0;
+            while((length = bufferedInputStream.read(bytes)) != -1) {
+                bufferedOutputStream.write(bytes);
+            }*/
+
+            // TODO--测试用，之后删除
+            stage4 = System.currentTimeMillis();
+
             fileOutputStream.flush();
             fileOutputStream.close();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            StringBuilder errorMsg = new StringBuilder()
+                    .append("下载图片数据出错，url=")
+                    .append(url);
+            log.error(errorMsg.toString(), ex);
         }
+        // TODO--测试用，之后删除
+        stage5 = System.currentTimeMillis();
+
+        log.info("下载图片url={}所用的各个阶段时间为：stage1={}ms, stage2={}ms, stage3={}ms, stage4={}ms, stage5={}ms，总时间total={}ms", url, stage1 - begin, stage2 - stage1, stage3 - stage2, stage4 - stage3, stage5 - stage4, stage5 - begin);
     }
 
 
 
     /**
-     * 根据pixivId下载其对应的一张图片
+     * 根据pixivId下载其对应的所有图片
      * @param pixivId
      */
     public void downloadPictureByPixivId(String pixivId) {
         if (StringUtils.isEmpty(pixivId)) {
-            //System.out.println("pixivId不能为空");
             log.error("downloadPictureByPixivId方法的入参pxivId不能为空");
         }
-
+        /*
         // 先根据pixivId获取原始大图的地址
-        String url = PixivPictureInfoUtil.getUrlFromArtworksByPixivId(pixivId);
+        String url = PixivPictureInfoUtils.getUrlFromArtworksByPixivId(pixivId);
         if (StringUtils.isEmpty(url)) {
             //System.out.println("获取原始大图地址出错：pixivId=" + pixivId + "\nurl=url");
             log.error("获取原始大图地址出错：\npixivId={}\nurl={}", pixivId, url);
         }
         // 根据原始大图地址将图片下载到本地
-        downloadPixivPicture(url);
+        downloadPixivPicture(url);*/
+
+        List<String> urls = PixivPictureInfoUtils.getUrlsFromArtworksByPixivId(pixivId);
+        if (CollectionUtils.isEmpty(urls)) {
+            log.error("获取pixivId={}对应的所有原始大图地址出错：", pixivId);
+        }
+        for (String url : urls) {
+            try {
+                downloadPixivPicture(url);
+            } catch (Exception ex) {
+                // 下载pixivId对应的所有图片之一出错时，记录日志，跳过--TODO--之后再补充针对出错的处理
+                StringBuilder errorMsg = new StringBuilder().append("下载图片出错，图片地址url=").append(url);
+                log.error(errorMsg.toString(), ex);
+                continue;
+            }
+        }
     }
 
     /**
@@ -101,7 +137,7 @@ public class PixivPictureDownloader {
      * @param pixivId
      */
     public void downloadMultiPicturesByPixivId(String pixivId) {
-        List<String> urls = PixivPictureInfoUtil.getUrlsFromAjaxIllustPagesByPixivId(pixivId);
+        List<String> urls = PixivPictureInfoUtils.getUrlsFromAjaxIllustPagesByPixivId(pixivId);
 
         for (String url : urls) {
             try {
@@ -119,9 +155,9 @@ public class PixivPictureDownloader {
      * @param pixivId
      */
     public void downloadAllPicturesByPixivId(String pixivId) {
-        String respHtml = PixivPictureInfoUtil.getRespHtmlFromArtworksInterface(pixivId);
-        String content = PixivInterfaceResultParser.getArtworksResultContent(respHtml);
-        PixivArtworksInterfaceResultContentBO resultContentBO = PixivInterfaceResultParser.parseArtworksResult(content);
+        String respHtml = PixivRequestUtils.getRespHtmlFromArtworksInterface(pixivId).orElse("");
+        String content = PixivResultParser.getArtworksResultContent(respHtml);
+        PixivArtworksInterfaceResultContentBO resultContentBO = PixivResultParser.parseArtworksResult(content);
         if (resultContentBO == null || resultContentBO.getPictureDetailInfoBO() == null) {
             return;
         }
@@ -141,7 +177,7 @@ public class PixivPictureDownloader {
      * @param pixivId
      */
     public void downloadRecommendPictureByPixivId(String pixivId) {
-        List<String> pixivIdList = PixivPictureInfoUtil.getPixivIdsFromAjaxIllustRecommend(pixivId);
+        List<String> pixivIdList = PixivPictureInfoUtils.getPixivIdsFromAjaxIllustRecommend(pixivId);
 
         pixivIdList.forEach(recommendPixivId -> {
             downloadPictureByPixivId(recommendPixivId);
@@ -154,7 +190,7 @@ public class PixivPictureDownloader {
      */
     public void downloadRecommendPictureByPixivIdList(List<String> pixivIdList) {
         // 先获取由这些pixivId所关联推荐的图片pixivId，这里通过Set保证没有重复的，
-        Set<String> recommendPixivIdSet = PixivPictureInfoUtil.getRecommendPixivIdSetByPixivIdList(pixivIdList);
+        Set<String> recommendPixivIdSet = PixivPictureInfoUtils.getRecommendPixivIdSetByPixivIdList(pixivIdList);
 
         if (CollectionUtils.isEmpty(recommendPixivIdSet)) {
             log.warn("获取pixivIdList所关联推荐的所有图片的recommendPixivIdSet为空，其中pixivIdList为：\n{}", JSONObject.toJSONString(pixivIdList));
@@ -170,7 +206,11 @@ public class PixivPictureDownloader {
                 downloadPictureByPixivId(pixivId);
             } catch (Exception ex) {
                 // 如果在下载一张图片的时候出错，则暂时跳过，同时记录下
-                ex.printStackTrace();
+                StringBuilder errorMsg = new StringBuilder()
+                        .append("下载pixivId=")
+                        .append(pixivId)
+                        .append("对应的图片发生错误");
+                log.error(errorMsg.toString(), ex);
                 errorPixivIdSet.add(pixivId);
                 continue;
             }
@@ -188,7 +228,7 @@ public class PixivPictureDownloader {
      * @param pixivId
      */
     public void downloadRecommendPicByPixivIdWithTwoDepth(String pixivId) {
-        List<String> initRecommendPixivIdList = PixivPictureInfoUtil.getPixivIdsFromAjaxIllustRecommend(pixivId);
+        List<String> initRecommendPixivIdList = PixivPictureInfoUtils.getPixivIdsFromAjaxIllustRecommend(pixivId);
 
         Set<String> allRecommendPixivIdSet = new HashSet<>(1024);
 
@@ -198,7 +238,7 @@ public class PixivPictureDownloader {
         // 把第二层关联推荐的都保存下
         for (String recommendPixivId : initRecommendPixivIdList) {
             try {
-                List<String> secondRecommendPixivIdList = PixivPictureInfoUtil.getPixivIdsFromAjaxIllustRecommend(recommendPixivId);
+                List<String> secondRecommendPixivIdList = PixivPictureInfoUtils.getPixivIdsFromAjaxIllustRecommend(recommendPixivId);
 
                 allRecommendPixivIdSet.addAll(secondRecommendPixivIdList);
             } catch (Exception ex) {
@@ -230,15 +270,21 @@ public class PixivPictureDownloader {
      */
     public void downloadRecommendPicAndAuthorWorksByPixivId(String pixivId) {
         // 获取所有推荐图片作者的所有作品图片pixiId
-        List<String> pixivIds = PixivPictureInfoUtil.getPixivIdsFromRecommendPicAuthorsWorksByPixivId(pixivId);
+        Set<String> pixivIds = PixivPictureInfoUtils.getPixivIdsFromRecommendPicAuthorsWorksByPixivId(pixivId);
+
+        log.info("请求获取到的所有图片pixivId数量为：{}", pixivIds.size());
+
+        List<String> errorPixivIds = new ArrayList<>();
 
         for (String tempPixivId : pixivIds) {
             try {
-                downloadAllPicturesByPixivId(tempPixivId);
+                downloadPictureByPixivId(tempPixivId);
             } catch (Exception ex) {
                 ex.printStackTrace();
+                errorPixivIds.add(tempPixivId);
                 continue;
             }
         }
+        log.info("请求下载的图片数量为：{}\n下载出错的图片数量为：{}\n下载成功的图片数量：{}",pixivIds.size(), errorPixivIds.size(), pixivIds.size() - errorPixivIds.size());
     }
 }

@@ -21,11 +21,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Pixiv接口返回结果的解析处理类
+ * 专门用于解析Pixiv接口返回结果
  */
 @Slf4j
-@Service
-public class PixivInterfaceResultParser {
+public class PixivResultParser {
 
     /**
      * 获取artworks接口返回的结果内容
@@ -48,6 +47,7 @@ public class PixivInterfaceResultParser {
     /**
      * 解析artworks接口返回的content内容中的具体信息
      * content返回结果内容可参见"sample/artworks接口返回结果的preload-data的content内容.json"
+     * https://www.pixiv.net/artworks/80385020
      * @param content
      * @return
      */
@@ -64,8 +64,6 @@ public class PixivInterfaceResultParser {
         // 因为user节点里是以作者userId作为key的，所以这里只能以Map的方式进行获取
         Map<String, Object> userInnerMap = user.getInnerMap();
 
-
-
         List<PixivArtworksInterfaceResultContentBO> resultContentBOList = new ArrayList<>(4);
         // 这里的Map目前只看过一个元素的情况，如果有多个，可能需要另外处理
         for (Map.Entry<String, Object> entry : illustInnerMap.entrySet()) {
@@ -80,7 +78,6 @@ public class PixivInterfaceResultParser {
             List<String> userIllustIdList = null;
             if (userIllusts != null) {
                 Map<String, Object> userIllustsInnerMap = userIllusts.getInnerMap();
-                int size = userIllustsInnerMap.size();
                 userIllustIdList = userIllustsInnerMap.keySet().stream().collect(Collectors.toList());
             }
 
@@ -140,9 +137,6 @@ public class PixivInterfaceResultParser {
             resultContentBOList.add(resultContentBO);
         }
 
-
-
-
         if (resultContentBOList.size() != 1) {
             // 这里做个记录吧，万一真有多个的情况呢
             log.error("artworks接口返回的content内部包含不止一个pixivId的数据，content内容为：\n{}", jsonContent);
@@ -190,11 +184,14 @@ public class PixivInterfaceResultParser {
      * @param respJSONStr 上面接口返回的JSON格式的字符串
      * @return
      */
-    public static List<String> getUrlsFromAjaxIllustPageInterfaceResult(String respJSONStr) {
-        JSONObject respJSON = JSONObject.parseObject(respJSONStr);
+    public static List<String> getUrlsFromAjaxIllustPageResult(String respJSONStr) {
+        List<String> originalUrls = new ArrayList<>(8);
+        if (StringUtils.isEmpty(respJSONStr)) {
+            return originalUrls;
+        }
+        JSONObject respJSON = JSON.parseObject(respJSONStr);
         JSONArray body = respJSON.getJSONArray("body");
 
-        List<String> originalUrls = new ArrayList<>(8);
 
         for (int i = 0; i < body.size(); ++i) {
             JSONObject element = body.getJSONObject(i);
@@ -204,7 +201,57 @@ public class PixivInterfaceResultParser {
             // TODO--这里其实还可以获取原始图片的width、height、thumb_mini、small、regular等信息的，之后看需要再补充
         }
 
+        // TODO--临时测试用，之后删除
+        //log.info("解析ajax/illust/{pixivId}/pages接口返回结果的respJSONStr=\n{}\n得到的原始图片地址有：\n{}", respJSONStr, JSON.toJSON(originalUrls));
+
         return originalUrls;
+    }
+
+    /**
+     * 从Pixiv的关联图片推荐接口返回的结果字符串中解析出其中所有推荐的图片pixivId
+     * https://www.pixiv.net/ajax/illust/79759981/recommend/init?limit=18
+     * @param respJSONStr
+     * @return
+     */
+    public static List<String> getPixivIdsFromRespStr(String respJSONStr) {
+        List<String> result = new ArrayList<>();
+        if (StringUtils.isEmpty(respJSONStr)) {
+            return result;
+        }
+
+
+        // 解析返回结果
+        JSONObject resp = JSON.parseObject(respJSONStr);
+        JSONObject body = resp.getJSONObject("body");
+        JSONArray illusts = body.getJSONArray("illusts");
+        JSONArray nextIds = body.getJSONArray("nextIds");
+
+        List<String> nextIdList = new ArrayList<>();
+        for (int i = 0; i < nextIds.size(); ++i) {
+            String nextId = nextIds.getString(i);
+            nextIdList.add(nextId);
+        }
+
+        List<String> illustsIdList = new ArrayList<>();
+        for (int j = 0; j < illusts.size(); ++j) {
+            JSONObject illustObject = illusts.getJSONObject(j);
+            String id = illustObject.getString("id");
+            illustsIdList.add(id);
+        }
+
+        result.addAll(illustsIdList);
+        result.addAll(nextIdList);
+
+        StringBuilder resultInfo = new StringBuilder()
+                .append("关联图片推荐接口返回的图片pixivIds总共有:").append(result.size()).append("个\n")
+                .append("其中nextIds有：").append(nextIds.size()).append("个\n")
+                .append("其中illustIds有：").append(illustsIdList.size()).append("个\n")
+                .append("所有的pixivIds如下：\n")
+                .append(JSONObject.toJSONString(result));
+
+        log.info(resultInfo.toString());
+
+        return result;
     }
 
 }
