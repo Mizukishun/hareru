@@ -48,4 +48,11 @@ public class PixivConstants {
     public static String PIXIV_AJAX_ILLUST_PAGES_PREFIX = "https://www.pixiv.net/ajax/illust/";
     public static String PIXIV_AJAX_ILLUST_PAGES_SUFFIX = "/pages";
 
+    /**
+     * 根据作者pixivUserId获取该作者所有作品信息的接口地址，中间的1277076是该作者的pixivUserId
+     * https://www.pixiv.net/ajax/user/1277076/profile/all
+     */
+    public static String PIXIV_AJAX_USER_PROFILE_ALL_PREFIX = "https://www.pixiv.net/ajax/user/";
+    public static String PIXIV_AJAX_USER_PROFILE_ALL_SUFFIX = "/profile/all";
+
 }

@@ -132,9 +132,45 @@ public class PixivRequestUtils {
             result = Optional.of(respJSONStr);
         } catch (IOException ex) {
             StringBuilder errorMsg = new StringBuilder()
-                    .append("根据出错，其中pixivId=")
+                    .append("根据pixivId获取所关联推荐的所有图片的接口返回结果，其中pixivId=")
                     .append(pixivId)
                     .append("请求的具体地址为：")
+                    .append(url.toString());
+            log.error(errorMsg.toString(), ex);
+        }
+        return result;
+    }
+
+    /**
+     * 根据作者pixivUserId获取该作者所有作品基本信息的接口返回结果
+     * https://www.pixiv.net/ajax/user/1277076/profile/all
+     * @param pixivUserId
+     * @return
+     */
+    public static Optional<String> getResponseFromAjaxUserProfileAll(String pixivUserId) {
+        StringBuilder url = new StringBuilder()
+                .append(PixivConstants.PIXIV_AJAX_USER_PROFILE_ALL_PREFIX)
+                .append(pixivUserId)
+                .append(PixivConstants.PIXIV_AJAX_USER_PROFILE_ALL_SUFFIX);
+        Headers headers = PixivHeadersUtils.getHeadersWithUserCookie();
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .headers(headers)
+                .url(url.toString())
+                .build();
+        Optional<String> result = Optional.empty();
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                log.error("请求作者所有作品基本信息接口失败，url={}", url.toString());
+                return result;
+            }
+            GZIPInputStream gZipInputStream = new GZIPInputStream(response.body().byteStream());
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(gZipInputStream, "UTF-8"));
+            String respJSONStr = bufferedReader.lines().collect(Collectors.joining());
+            result = Optional.of(respJSONStr);
+        } catch (IOException ex) {
+            StringBuilder errorMsg = new StringBuilder()
+                    .append("请求根据作者pixivUserId获取该作者所有作品基本信息的接口返回结果出错,url=")
                     .append(url.toString());
             log.error(errorMsg.toString(), ex);
         }

@@ -2,10 +2,7 @@ package org.kiharu.hareru.pixiv;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Headers;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kiharu.hareru.bo.PixivArtworksInterfaceResultContentBO;
@@ -81,8 +78,10 @@ public class PixivPictureDownloader {
             // TODO--测试用，之后删除
             stage4 = System.currentTimeMillis();
 
-            fileOutputStream.flush();
-            fileOutputStream.close();
+            /*fileOutputStream.flush();
+            fileOutputStream.close();*/
+            bufferedOutputStream.flush();
+            bufferedOutputStream.close();
         } catch (IOException ex) {
             StringBuilder errorMsg = new StringBuilder()
                     .append("下载图片数据出错，url=")
@@ -93,6 +92,66 @@ public class PixivPictureDownloader {
         stage5 = System.currentTimeMillis();
 
         log.info("下载图片url={}所用的各个阶段时间为：stage1={}ms, stage2={}ms, stage3={}ms, stage4={}ms, stage5={}ms，总时间total={}ms", url, stage1 - begin, stage2 - stage1, stage3 - stage2, stage4 - stage3, stage5 - stage4, stage5 - begin);
+    }
+
+    /**
+     * 尝试采用异步的方式下载图片，看下载速度是否更好点
+     * @param url 下载图片的地址
+     */
+    public void asyncDownloadPixivPicture(String url){
+        Headers headers = PixivHeadersUtils.getSimpleHeaders();
+        OkHttpClient client = new OkHttpClient.Builder().build();
+        Request request = new Request.Builder().headers(headers).url(url).build();
+        File savedPicFile = PixivUtils.getSavedPicFile(url);
+        //TODO--测试用，之后删除
+        //long begin = System.currentTimeMillis();
+        /*try (Response response = client.newCall(request).execute()) {
+            //TODO--测试用，之后删除
+            long stage1 = System.currentTimeMillis();
+            byte[] bytes = response.body().bytes();
+            log.info("这里获取到的字节长度长度为:{}", bytes.length);
+            long stage2 = System.currentTimeMillis();
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file, true));
+            bufferedOutputStream.write(bytes);
+            bufferedOutputStream.flush();
+            bufferedOutputStream.close();
+            //TODO--测试用，之后删除
+            long stage3 = System.currentTimeMillis();
+            log.info("下载所用总时间={}ms,stage1={}ms,stage2={}ms,stage3={}ms", stage3 - begin, stage1 - begin, stage2 - stage1, stage3 - stage2);
+        } catch (IOException ex) {
+            StringBuilder errorMsg = new StringBuilder().append("异步下载图片保存时出错,file=").append(file.getAbsolutePath());
+            log.error(errorMsg.toString(), ex);
+        }*/
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException ex) {
+                log.error("异步请求下载图片失败，url=" + url, ex);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                //BufferedInputStream bufferedInputStream = new BufferedInputStream(response.body().byteStream());
+                try {
+                    log.info("进入异步onResponse");
+
+                    byte[] bytes = response.body().bytes();
+                    BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(savedPicFile));
+                    bufferedOutputStream.write(bytes);
+
+
+                    bufferedOutputStream.flush();
+                    bufferedOutputStream.close();
+                    bytes = null;
+                    log.info("我送你离开~");
+                } catch (IOException ex) {
+                    StringBuilder errorMsg = new StringBuilder().append("异步下载图片保存时出错,file=").append(savedPicFile.getAbsolutePath());
+                    log.error(errorMsg.toString(), ex);
+                }
+
+            }
+        });
+        log.info("Completed");
     }
 
 
@@ -122,6 +181,31 @@ public class PixivPictureDownloader {
         for (String url : urls) {
             try {
                 downloadPixivPicture(url);
+            } catch (Exception ex) {
+                // 下载pixivId对应的所有图片之一出错时，记录日志，跳过--TODO--之后再补充针对出错的处理
+                StringBuilder errorMsg = new StringBuilder().append("下载图片出错，图片地址url=").append(url);
+                log.error(errorMsg.toString(), ex);
+                continue;
+            }
+        }
+    }
+
+    /**
+     * 根据pixivId下载其对应的所有图片，这里使用异步下载图片
+     * @param pixivId
+     */
+    public void asyncDownloadPictureByPixivId(String pixivId) {
+        if (StringUtils.isEmpty(pixivId)) {
+            log.error("downloadPictureByPixivId方法的入参pxivId不能为空");
+        }
+
+        List<String> urls = PixivPictureInfoUtils.getUrlsFromArtworksByPixivId(pixivId);
+        if (CollectionUtils.isEmpty(urls)) {
+            log.error("获取pixivId={}对应的所有原始大图地址出错：", pixivId);
+        }
+        for (String url : urls) {
+            try {
+                asyncDownloadPixivPicture(url);
             } catch (Exception ex) {
                 // 下载pixivId对应的所有图片之一出错时，记录日志，跳过--TODO--之后再补充针对出错的处理
                 StringBuilder errorMsg = new StringBuilder().append("下载图片出错，图片地址url=").append(url);
@@ -288,5 +372,18 @@ public class PixivPictureDownloader {
             }
         }
         log.info("请求下载的图片数量为：{}\n下载出错的图片数量为：{}\n下载成功的图片数量：{}",pixivIds.size(), errorPixivIds.size(), pixivIds.size() - errorPixivIds.size());
+    }
+
+    /**
+     * 下载作者的插画及漫画
+     * 存放在以作者pixivUserId的文件夹中
+     * @param pixivUserId
+     */
+    public void downloadAuthorIllustAndManga(String pixivUserId) {
+        Set<String> authorWorksId = PixivPictureInfoUtils.getAuthorIllustAndMangaId(pixivUserId);
+        for (String pixivId : authorWorksId) {
+            // TODO--下面这个虽然可以下载，但
+            asyncDownloadPictureByPixivId(pixivId);
+        }
     }
 }

@@ -8,16 +8,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.kiharu.hareru.bo.PixivArtworksInterfaceResultContentBO;
-import org.kiharu.hareru.bo.PixivPictureAuthorInfoBO;
-import org.kiharu.hareru.bo.PixivPictureDetailInfoBO;
-import org.kiharu.hareru.bo.PixivPictureTagBO;
-import org.springframework.stereotype.Service;
+import org.kiharu.hareru.bo.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -250,6 +243,36 @@ public class PixivResultParser {
                 .append(JSONObject.toJSONString(result));
 
         log.info(resultInfo.toString());
+
+        return result;
+    }
+
+
+    /**
+     * 从/ajax/user/1277076/profile/all接口的返回结果中解析出作者的插画及漫画信息
+     * 获取返回结果的接口请求可参见PixivRequestUtils.gerResponseFromAjaxUserProfileAll()方法
+     * 返回结果内容可参见"sample/用户所有图片ajax-user-pixivId-profile-all接口返回.json"文件
+     * @param respJSONStr
+     * @return
+     */
+    public static PixivAuthorProfileBO getAuthorIllustAndMangaInfo(String respJSONStr) {
+        PixivAuthorProfileBO result = new PixivAuthorProfileBO();
+        if (StringUtils.isEmpty(respJSONStr)) {
+            return result;
+        }
+
+        // 解析返回结果
+        JSONObject respJSON = JSON.parseObject(respJSONStr);
+        JSONObject body = respJSON.getJSONObject("body");
+        JSONObject illust = body.getJSONObject("illusts");
+        JSONObject manga = body.getJSONObject("manga");
+        // TODO--还有其它信息，可参见上面列出的文件，现在暂时不处理，之后如果有需要，可以在这里进行添加
+
+        Set<String> illustIdList = illust.getInnerMap().keySet();
+        Set<String> mangaIdList = manga.getInnerMap().keySet();
+
+        result.setIllustIdList(illustIdList);
+        result.setMangaIdList(mangaIdList);
 
         return result;
     }

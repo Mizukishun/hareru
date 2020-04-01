@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.util.Assert;
 
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 public class PixivPictureInfoUtilsTest {
@@ -36,5 +37,12 @@ public class PixivPictureInfoUtilsTest {
         List<String> multiUrls = PixivPictureInfoUtils.getUrlsFromArtworksByPixivId(multiPixivId);
         log.info("pixivId对应的所有图片的原始大图地址有(多张）：\n{}", JSON.toJSONString(multiUrls));
         Assert.isTrue(multiUrls.size() > 1, multiPixivId + "对应的是多张图片");
+    }
+
+    @Test
+    public void testGetAuthorIllustAndMangaId() {
+        String pixivUserId = "7038833";
+        Set<String> result = PixivPictureInfoUtils.getAuthorIllustAndMangaId(pixivUserId);
+        log.info("获取到{}作者的所有插画和漫画的ID：\n{}", pixivUserId, JSON.toJSONString(result));
     }
 }

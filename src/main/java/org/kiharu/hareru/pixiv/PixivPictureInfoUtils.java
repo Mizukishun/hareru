@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kiharu.hareru.bo.PixivArtworksInterfaceResultContentBO;
+import org.kiharu.hareru.bo.PixivAuthorProfileBO;
 import org.kiharu.hareru.bo.PixivPictureDetailInfoBO;
 import org.kiharu.hareru.constant.PixivConstants;
 import org.springframework.stereotype.Service;
@@ -168,7 +169,7 @@ public class PixivPictureInfoUtils {
     }
 
     /**
-     * 根据pixivId所关联推荐的图片以及所有这些图片作者的所有作品的pixivId（一层）
+     * 获取根据pixivId所关联推荐的图片以及所有这些图片作者的所有作品的pixivId（一层）
      * @param pixivId
      * @return
      */
@@ -182,6 +183,20 @@ public class PixivPictureInfoUtils {
             List<String> authorWorksPixivIdList = getPixivIdsFromAuthorAllWorksByPixivId(recommendPixivId);
             result.addAll(authorWorksPixivIdList);
         }
+        return result;
+    }
+
+    /**
+     * 获取作者其所有的插画及漫画作品ID
+     * @param pixivUserId 作者的P站ID
+     * @return
+     */
+    public static Set<String> getAuthorIllustAndMangaId(String pixivUserId) {
+        String respJSONStr = PixivRequestUtils.getResponseFromAjaxUserProfileAll(pixivUserId).orElse("");
+        PixivAuthorProfileBO pixivAuthorProfileBO = PixivResultParser.getAuthorIllustAndMangaInfo(respJSONStr);
+        Set<String> result = new HashSet<>(16);
+        result.addAll(pixivAuthorProfileBO.getIllustIdList());
+        result.addAll(pixivAuthorProfileBO.getMangaIdList());
         return result;
     }
 }

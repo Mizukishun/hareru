@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.kiharu.hareru.bo.PixivArtworksInterfaceResultContentBO;
+import org.kiharu.hareru.bo.PixivAuthorProfileBO;
 
 import java.util.List;
 
@@ -35,5 +36,13 @@ public class PixivResultParserTest {
         String resp = PixivRequestUtils.getResponseFromAjaxIllustPage(pixivId).orElse("");
         List<String> result = PixivResultParser.getUrlsFromAjaxIllustPageResult(resp);
         log.info("获取pixivId={}对应的所有图片的原始大图地址：\n{}", pixivId, JSONObject.toJSONString(result));
+    }
+
+    @Test
+    public void testGetAuthorIllustAndMangaInfo() {
+        String pixivUserId = "7038833";
+        String resp = PixivRequestUtils.getResponseFromAjaxUserProfileAll(pixivUserId).orElse("");
+        PixivAuthorProfileBO result = PixivResultParser.getAuthorIllustAndMangaInfo(resp);
+        log.info("请求获取到的{}作者插画及漫画ID信息为：\n{}", pixivUserId, JSON.toJSONString(result));
     }
 }
