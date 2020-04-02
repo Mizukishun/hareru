@@ -9,8 +9,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.kiharu.hareru.bo.*;
+import org.kiharu.hareru.constant.PixivConstants;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -257,6 +260,10 @@ public class PixivResultParser {
      */
     public static PixivAuthorProfileBO getAuthorIllustAndMangaInfo(String respJSONStr) {
         PixivAuthorProfileBO result = new PixivAuthorProfileBO();
+        // 防止外层的NullPointerException报错
+        result.setMangaIdList(new HashSet<>());
+        result.setIllustIdList(new HashSet<>());
+
         if (StringUtils.isEmpty(respJSONStr)) {
             return result;
         }
@@ -264,15 +271,86 @@ public class PixivResultParser {
         // 解析返回结果
         JSONObject respJSON = JSON.parseObject(respJSONStr);
         JSONObject body = respJSON.getJSONObject("body");
-        JSONObject illust = body.getJSONObject("illusts");
-        JSONObject manga = body.getJSONObject("manga");
+
+        if (body.containsKey("illusts") && body.get("illusts") instanceof JSONObject) {
+            JSONObject illust = body.getJSONObject("illusts");
+            Set<String> illustIdList = illust.getInnerMap().keySet();
+            result.setIllustIdList(illustIdList);
+        }
+
+        if (body.containsKey("manga") && body.get("manga") instanceof JSONObject) {
+            JSONObject manga = body.getJSONObject("manga");
+
+            Set<String> mangaIdList = manga.getInnerMap().keySet();
+            result.setMangaIdList(mangaIdList);
+        }
         // TODO--还有其它信息，可参见上面列出的文件，现在暂时不处理，之后如果有需要，可以在这里进行添加
 
-        Set<String> illustIdList = illust.getInnerMap().keySet();
-        Set<String> mangaIdList = manga.getInnerMap().keySet();
 
-        result.setIllustIdList(illustIdList);
-        result.setMangaIdList(mangaIdList);
+
+        return result;
+    }
+
+    /**
+     * 从综合R18每日排行榜接口返回结果中解析出其中的pixivId
+     * 这里采用正则表达式的方式来进行解析，不使用JSoup库，因为正则可能更直观方便
+     * TODO--这块可能之后需要测试对比下性能看看
+     * https://www.pixiv.net/ranking.php?mode=daily_r18&date=20200330
+     * 接口返回结果内容可参见"sample/综合R18每日排行榜接口返回结果ranking-daily-r18.html"
+     * @param respHtml
+     * @return
+     */
+    public static Set<String> getPixivIdsFromRankingDailyR18(String respHtml) {
+        Set<String> result = new HashSet<>(64);
+        if (StringUtils.isEmpty(respHtml)) {
+            return result;
+        }
+
+        // 通过正则匹配找到所有的图片地址，并从中解析出对应的图片pixivId
+        // 匹配出的图片地址类似：https://i.pximg.net/c/240x480/img-master/img/2020/03/30/00/18/22/80441237_p0_master1200.jpg
+        String regex = PixivConstants.PIXIV_REGEX_RANKING_DAILY_R18;
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(respHtml);
+        while(matcher.find()) {
+            String imgUrl = matcher.group();
+            if (imgUrl.contains("/")) {
+                int beginIndex = imgUrl.lastIndexOf("/");
+                String imgName = imgUrl.substring(beginIndex + 1, imgUrl.length());
+                if (imgName.contains("_p")) {
+                    int endIndex = imgName.indexOf("_p");
+                    String pixivId = imgName.substring(0, endIndex);
+                    result.add(pixivId);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 从综合R18每日排行榜P2接口返回结果中解析出所有的图片pixivId
+     * https://www.pixiv.net/ranking.php?mode=daily_r18&date=20200330&p=2&format=json
+     * 接口返回结果内容可参见"sample/综合R18每日排行榜接口返回结果ranking-daily-r18-p2.json"
+     * @param respJSONStr
+     * @return
+     */
+    public static Set<String> getPixivIdsFromRankingDailyR18P2(String respJSONStr) {
+        Set<String> result = new HashSet<>(64);
+        JSONObject respJSON = JSON.parseObject(respJSONStr);
+        JSONArray contents = respJSON.getJSONArray("contents");
+        for(int i = 0; i < contents.size(); ++i) {
+            JSONObject content = contents.getJSONObject(i);
+            String url = content.getString("url");
+            if (url.contains("/")) {
+                int beginIndex = url.lastIndexOf("/") + 1;
+                String imgName = url.substring(beginIndex);
+                if (imgName.contains("_")) {
+                    int endIndex = imgName.indexOf("_");
+                    String pixivId = imgName.substring(0, endIndex);
+                    result.add(pixivId);
+                }
+            }
+
+        }
 
         return result;
     }

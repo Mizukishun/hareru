@@ -18,9 +18,7 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 @Service
-public class PixivPictureInfoUtils {
-
-
+public class PixivPictureUtils {
 
     /**
      * 根据pixivId从artworks中获取的内容中提取出图片的原始大图地址
@@ -36,7 +34,7 @@ public class PixivPictureInfoUtils {
         String result = null;
         String respHtml = PixivRequestUtils.getRespHtmlFromArtworksInterface(pixivId).orElse("");
         // 匹配https://i.pximg.net/img-original/img/2019/01/05/00/30/59/72497087_p0.jpg这样的原图
-        String regex = PixivConstants.PIXIV_ARTWORKS_IMG_ORIGINAL_REGEX;
+        String regex = PixivConstants.PIXIV_REGEX_ARTWORKS_IMG_ORIGINAL;
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(respHtml);
 
@@ -199,4 +197,37 @@ public class PixivPictureInfoUtils {
         result.addAll(pixivAuthorProfileBO.getMangaIdList());
         return result;
     }
+
+    /**
+     * 获取指定日期的综合R18每日排行榜图片ID
+     * 从下面这两个接口返回结果中解析获取
+     * https://www.pixiv.net/ranking.php?mode=daily_r18&date=20200330
+     * https://www.pixiv.net/ranking.php?mode=daily_r18&date=20200330&p=2&format=json
+     * @param date 20200330格式的日期字符串
+     * @return
+     */
+    public static Set<String> getPixivIdsFromRankingDailyR18(String date) {
+        Set<String> result = new HashSet<>(128);
+        // 获取https://www.pixiv.net/ranking.php?mode=daily_r18&date=20200330接口中返回的图片pixivId
+        StringBuilder url = new StringBuilder()
+                .append(PixivConstants.PIXIV_RANKING_DAILY_R18_PREFIX)
+                .append(date);
+        String respHtml = PixivRequestUtils.getCommonRespFromGZipReqWithCookie(url.toString()).orElse("");
+
+        Set<String> pixivIdSet1 = PixivResultParser.getPixivIdsFromRankingDailyR18(respHtml);
+        result.addAll(pixivIdSet1);
+
+        // 获取https://www.pixiv.net/ranking.php?mode=daily_r18&date=20200330&p=2&format=json接口返回的图片pixivId
+        StringBuilder urlP2 = new StringBuilder()
+                .append(PixivConstants.PIXIV_RANKING_DAILY_R18_PREFIX)
+                .append(date)
+                .append(PixivConstants.PIXIV_RANKING_DAILY_R18_SUFFIX);
+        String respJSONStr = PixivRequestUtils.getCommonRespFromGZipReqWithCookie(urlP2.toString()).orElse("");
+
+        Set<String> pixivIdSet2 = PixivResultParser.getPixivIdsFromRankingDailyR18P2(respJSONStr);
+        result.addAll(pixivIdSet2);
+
+        return result;
+    }
+
 }

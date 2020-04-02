@@ -176,4 +176,51 @@ public class PixivRequestUtils {
         }
         return result;
     }
+
+    /**
+     * 获取综合R18每日排行榜接口的返回结果
+     * https://www.pixiv.net/ranking.php?mode=daily_r18&date=20200331
+     * @param date 20200331格式的日期字符串，指定具体哪一天的综合R18排行榜
+     * @return
+     */
+    public static Optional<String> getResponseFromRankingDailyR18(String date) {
+        Optional<String> respHtml = Optional.empty();
+        StringBuilder url = new StringBuilder()
+                .append(PixivConstants.PIXIV_RANKING_DAILY_R18_PREFIX)
+                .append(date);
+        respHtml = getCommonRespFromGZipReqWithCookie(url.toString());
+
+        return respHtml;
+    }
+
+    /**
+     * 通用的用于获取返回结果的方法，带有用户Cookies信息的请求，同时返回结果是压缩类型的
+     * @param url
+     * @return 字符串
+     */
+    public static Optional<String> getCommonRespFromGZipReqWithCookie(String url) {
+        Headers headers = PixivHeadersUtils.getHeadersWithUserCookieAutoDecompress();
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .headers(headers)
+                .url(url)
+                .build();
+        Optional<String> result = Optional.empty();
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                log.error("请求获取url={}的返回结果失败", url);
+                return result;
+            }
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(response.body().byteStream(), "UTF-8"));
+            String resp = bufferedReader.lines().collect(Collectors.joining());
+            result = Optional.of(resp);
+        } catch (IOException ex) {
+            StringBuilder errorMsg = new StringBuilder()
+                    .append("请求获取url=")
+                    .append(url)
+                    .append("出错");
+            log.error(errorMsg.toString(), ex);
+        }
+        return result;
+    }
 }

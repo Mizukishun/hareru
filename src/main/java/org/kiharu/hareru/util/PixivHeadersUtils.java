@@ -55,4 +55,26 @@ public class PixivHeadersUtils {
         Headers headers = Headers.of(map);
         return headers;
     }
+
+
+    /**
+     * 获取带有用户Cookies信息的请求头
+     * 这里相比上面的主要是去掉了Accept-Encoding请求头，以便测试看OkHttp的自动解压缩功能
+     * @return
+     */
+    public static Headers getHeadersWithUserCookieAutoDecompress() {
+        Map<String, String> map = new HashMap<>();
+        map.put("Host", "www.pixiv.net");
+        map.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:74.0) Gecko/20100101 Firefox/74.0");
+        map.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+        map.put("Accept-Language", "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2");
+        //map.put("Accept-Encoding", "gzip, deflate, br");
+        map.put("DNT", "1");
+        map.put("Upgrade-Insecure-Requests", "1");
+        map.put("Connection", "keep-alive");
+        map.put("Cookie", "PHPSESSID=22834429_W44oSwMbDasKma4DsUWd1JLCcpcA7NPk");
+
+        Headers headers = Headers.of(map);
+        return headers;
+    }
 }

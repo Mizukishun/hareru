@@ -1,8 +1,8 @@
 package org.kiharu.hareru.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.kiharu.hareru.pixiv.PixivPictureDownloader;
-import org.kiharu.hareru.pixiv.PixivPictureInfoUtils;
+import org.kiharu.hareru.service.impl.PixivDownloadServiceImpl;
+import org.kiharu.hareru.pixiv.PixivPictureUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +15,7 @@ import java.util.Set;
 public class PixivDownloadController {
 
     @Autowired
-    private PixivPictureDownloader pixivPictureDownloader;
+    private PixivDownloadServiceImpl pixivDownloadServiceImpl;
 
     /**
      * 根据pixivId下载该图片
@@ -23,7 +23,7 @@ public class PixivDownloadController {
      */
     @GetMapping("/simpleDownloadByPixivId")
     public String simpleDownloadByPixivId(@RequestParam("pixivId") String pixivId) {
-        pixivPictureDownloader.downloadPictureByPixivId(pixivId);
+        pixivDownloadServiceImpl.downloadPictureByPixivId(pixivId);
         return "成功";
     }
 
@@ -33,7 +33,7 @@ public class PixivDownloadController {
      */
     @GetMapping("/downloadRecommendPictureByPixivId")
     public String downloadRecommendPictureByPixivId(@RequestParam("pixivId") String pixivId) {
-        pixivPictureDownloader.downloadRecommendPictureByPixivId(pixivId);
+        pixivDownloadServiceImpl.downloadRecommendPictureByPixivId(pixivId);
         return "SUCCESS";
     }
 
@@ -43,7 +43,7 @@ public class PixivDownloadController {
      */
     @GetMapping("/downloadRecommendPicturesByPixivIdList")
     public String downloadRecommendPicturesByPixivIdList(@RequestParam("pixivIdList") List<String> pixivIdList) {
-        pixivPictureDownloader.downloadRecommendPictureByPixivIdList(pixivIdList);
+        pixivDownloadServiceImpl.downloadRecommendPictureByPixivIdList(pixivIdList);
         return "SUCCESS";
     }
 
@@ -54,7 +54,7 @@ public class PixivDownloadController {
      */
     @PostMapping("/downloadRecommendPicByPixivIdWithTwoDepth")
     public String downloadRecommendPicByPixivIdWithTwoDepth(@RequestParam("pixivId") String pixivId) {
-        pixivPictureDownloader.downloadRecommendPicByPixivIdWithTwoDepth(pixivId);
+        pixivDownloadServiceImpl.downloadRecommendPicByPixivIdWithTwoDepth(pixivId);
         return "SUCCESS";
     }
 
@@ -65,7 +65,7 @@ public class PixivDownloadController {
      */
     @PostMapping("/downloadRecommendPicAndAuthorWorksByPixivId")
     public String downloadRecommendPicAndAuthorWorksByPixivId(@RequestParam("pixivId") String pixivId) {
-        pixivPictureDownloader.downloadRecommendPicAndAuthorWorksByPixivId(pixivId);
+        pixivDownloadServiceImpl.downloadRecommendPicAndAuthorWorksByPixivId(pixivId);
         return "SUCCESS";
     }
 
@@ -76,7 +76,7 @@ public class PixivDownloadController {
      */
     @GetMapping("/downloadAuthorWorksByPixivUserId")
     public String downloadAuthorWorksByPixivUserId(@RequestParam("pixivUserId")String pixivUserId) {
-        pixivPictureDownloader.downloadAuthorIllustAndManga(pixivUserId);
+        pixivDownloadServiceImpl.downloadAuthorIllustAndManga(pixivUserId);
         return "SUCCESS";
     }
 
@@ -88,13 +88,23 @@ public class PixivDownloadController {
      */
     @GetMapping("/downloadRecommendAuthorWorksByPixivId")
     public String downloadRecommendAuthorWorksByPixivId(@RequestParam("pixivId")String pixivId) {
-        Set<String> pixivIds = PixivPictureInfoUtils.getPixivIdsFromRecommendPicAuthorsWorksByPixivId(pixivId);
+        Set<String> pixivIds = PixivPictureUtils.getPixivIdsFromRecommendPicAuthorsWorksByPixivId(pixivId);
         log.info("根据pixivId={}获取到的关联推荐图片的所有作者的所有图片数量为：{}", pixivId, pixivIds.size());
         for (String downloadPixivId : pixivIds) {
-            pixivPictureDownloader.asyncDownloadPictureByPixivId(downloadPixivId);
+            pixivDownloadServiceImpl.asyncDownloadPictureByPixivId(downloadPixivId);
         }
 
         return "SUCCESS";
+    }
+
+    /**
+     * 下载综合R18每日排行榜图片（指定日期）
+     * @param date
+     */
+    @GetMapping("/downloadRankingDailyR18ByDate")
+    public void downloadRankingDailyR18ByDate(@RequestParam("date")String date) {
+        pixivDownloadServiceImpl.downloadRankingDailyR18(date);
+        log.info("SUCCESS");
     }
 
 
@@ -113,9 +123,9 @@ public class PixivDownloadController {
                 e.printStackTrace();
             }
         }*/
-        PixivPictureDownloader pixivPictureDownloader = new PixivPictureDownloader();
+        PixivDownloadServiceImpl pixivDownloadServiceImpl = new PixivDownloadServiceImpl();
         //pixivPictureDownloader.asyncDownloadPixivPicture(url, file);
-        pixivPictureDownloader.asyncDownloadPixivPicture(url);
+        pixivDownloadServiceImpl.asyncDownloadPixivPicture(url);
 
         log.info("SUCCESS");
     }

@@ -2,19 +2,17 @@ package org.kiharu.hareru.pixiv;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-
-import java.io.File;
-import java.io.IOException;
+import org.kiharu.hareru.service.impl.PixivDownloadServiceImpl;
 
 @Slf4j
-public class PixivPictureDownloaderTest {
+public class PixivDownloadServiceImplTest {
 
     @Test
     public void testDownloadPixivPicture() {
         String url = "https://i.pximg.net/img-original/img/2020/03/29/07/31/42/80420349_p2.jpg";
-        PixivPictureDownloader pixivPictureDownloader = new PixivPictureDownloader();
+        PixivDownloadServiceImpl pixivDownloadServiceImpl = new PixivDownloadServiceImpl();
         long begin = System.currentTimeMillis();
-        pixivPictureDownloader.downloadPixivPicture(url);
+        pixivDownloadServiceImpl.downloadPixivPicture(url);
         long end = System.currentTimeMillis();
         log.info("下载一张图片所用的时间为：{}秒", (end - begin) / 1000);
     }
@@ -23,14 +21,14 @@ public class PixivPictureDownloaderTest {
     @Test
     public void testDownloadPictureByPixivId() {
         String pixivId = "80420349";
-        PixivPictureDownloader pixivPictureDownloader = new PixivPictureDownloader();
-        pixivPictureDownloader.downloadPictureByPixivId(pixivId);
+        PixivDownloadServiceImpl pixivDownloadServiceImpl = new PixivDownloadServiceImpl();
+        pixivDownloadServiceImpl.downloadPictureByPixivId(pixivId);
     }
     @Test
     public void testAsyncDownloadPictureByPixivId() {
         String pixivId = "80420349";
-        PixivPictureDownloader pixivPictureDownloader = new PixivPictureDownloader();
-        pixivPictureDownloader.asyncDownloadPictureByPixivId(pixivId);
+        PixivDownloadServiceImpl pixivDownloadServiceImpl = new PixivDownloadServiceImpl();
+        pixivDownloadServiceImpl.asyncDownloadPictureByPixivId(pixivId);
 
         log.info("SUCCESS");
         // 用下面这个死循环来让这个单元测试能够进行！
@@ -48,8 +46,8 @@ public class PixivPictureDownloaderTest {
     @Test
     public void testGetPixivIdsFromAjaxIllustRecommend() {
         String pixivId = "79759981";
-        PixivPictureDownloader pixivPictureDownloader = new PixivPictureDownloader();
-        pixivPictureDownloader.downloadRecommendPictureByPixivId(pixivId);
+        PixivDownloadServiceImpl pixivDownloadServiceImpl = new PixivDownloadServiceImpl();
+        pixivDownloadServiceImpl.downloadRecommendPictureByPixivId(pixivId);
     }
 
     /**
@@ -69,8 +67,8 @@ public class PixivPictureDownloaderTest {
                 e.printStackTrace();
             }
         }*/
-        PixivPictureDownloader pixivPictureDownloader = new PixivPictureDownloader();
-        pixivPictureDownloader.asyncDownloadPixivPicture(url);
+        PixivDownloadServiceImpl pixivDownloadServiceImpl = new PixivDownloadServiceImpl();
+        pixivDownloadServiceImpl.asyncDownloadPixivPicture(url);
 
         log.info("SUCCESS");
         // 用下面这个死循环来让这个单元测试能够进行！
@@ -87,7 +85,7 @@ public class PixivPictureDownloaderTest {
     @Test
     public void testDownloadAuthorIllustAndManga() {
         String pixivUserId = "7038833";
-        PixivPictureDownloader downloader = new PixivPictureDownloader();
+        PixivDownloadServiceImpl downloader = new PixivDownloadServiceImpl();
         downloader.downloadAuthorIllustAndManga(pixivUserId);
         log.info("SUCCESS");
 

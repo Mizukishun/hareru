@@ -27,7 +27,7 @@ public class PixivConstants {
      * https://i.pximg.net/img-original/img/2019/01/05/00/30/59/72497087_p0.jpg
      * TODO--待确认是否所有的原始大图地址都是以"https://i.pximg.net/img-original/"开头的
      */
-    public static String PIXIV_ARTWORKS_IMG_ORIGINAL_REGEX = "https://i.pximg.net/img-original/[^\"]*";
+    public static String PIXIV_REGEX_ARTWORKS_IMG_ORIGINAL = "https://i.pximg.net/img-original/[^\"]*";
 
     /**
      * 获取推荐的图片pixivId的接口地址前缀和后缀，中间是原始图片pixivId
@@ -54,5 +54,19 @@ public class PixivConstants {
      */
     public static String PIXIV_AJAX_USER_PROFILE_ALL_PREFIX = "https://www.pixiv.net/ajax/user/";
     public static String PIXIV_AJAX_USER_PROFILE_ALL_SUFFIX = "/profile/all";
+
+    /**
+     * 综合R18每日排行榜接口地址
+     * https://www.pixiv.net/ranking.php?mode=daily_r18&date=20200330
+     * https://www.pixiv.net/ranking.php?mode=daily_r18&date=20200330&p=2&format=json
+     */
+    public static String PIXIV_RANKING_DAILY_R18_PREFIX = "https://www.pixiv.net/ranking.php?mode=daily_r18&date=";
+    public static String PIXIV_RANKING_DAILY_R18_SUFFIX = "&p=2&format=json";
+
+    /**
+     * 综合R18每日排行榜返回结果中匹配出涉及图片pixivId的正则表达式，得到类似如下的结果
+     * https://i.pximg.net/user-profile/img/2019/03/07/06/06/19/15490371_b5507fac57efd9ff5bc928d89cf33c93_50.png
+     */
+    public static String PIXIV_REGEX_RANKING_DAILY_R18 = "https://i.pximg.net/c/[^\"]*";
 
 }

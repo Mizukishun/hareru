@@ -1,4 +1,4 @@
-package org.kiharu.hareru.pixiv;
+package org.kiharu.hareru.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -7,6 +7,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kiharu.hareru.bo.PixivArtworksInterfaceResultContentBO;
 import org.kiharu.hareru.bo.PixivPictureDetailInfoBO;
+import org.kiharu.hareru.pixiv.PixivPictureUtils;
+import org.kiharu.hareru.pixiv.PixivRequestUtils;
+import org.kiharu.hareru.pixiv.PixivResultParser;
+import org.kiharu.hareru.service.PixivDownloadService;
 import org.kiharu.hareru.util.PixivHeadersUtils;
 import org.kiharu.hareru.util.PixivUtils;
 import org.springframework.stereotype.Service;
@@ -22,7 +26,7 @@ import java.util.Set;
  */
 @Slf4j
 @Service
-public class PixivPictureDownloader {
+public class PixivDownloadServiceImpl implements PixivDownloadService {
 
     /**
      * 下载指定url的图片到本地
@@ -174,7 +178,7 @@ public class PixivPictureDownloader {
         // 根据原始大图地址将图片下载到本地
         downloadPixivPicture(url);*/
 
-        List<String> urls = PixivPictureInfoUtils.getUrlsFromArtworksByPixivId(pixivId);
+        List<String> urls = PixivPictureUtils.getUrlsFromArtworksByPixivId(pixivId);
         if (CollectionUtils.isEmpty(urls)) {
             log.error("获取pixivId={}对应的所有原始大图地址出错：", pixivId);
         }
@@ -199,7 +203,7 @@ public class PixivPictureDownloader {
             log.error("downloadPictureByPixivId方法的入参pxivId不能为空");
         }
 
-        List<String> urls = PixivPictureInfoUtils.getUrlsFromArtworksByPixivId(pixivId);
+        List<String> urls = PixivPictureUtils.getUrlsFromArtworksByPixivId(pixivId);
         if (CollectionUtils.isEmpty(urls)) {
             log.error("获取pixivId={}对应的所有原始大图地址出错：", pixivId);
         }
@@ -221,7 +225,7 @@ public class PixivPictureDownloader {
      * @param pixivId
      */
     public void downloadMultiPicturesByPixivId(String pixivId) {
-        List<String> urls = PixivPictureInfoUtils.getUrlsFromAjaxIllustPagesByPixivId(pixivId);
+        List<String> urls = PixivPictureUtils.getUrlsFromAjaxIllustPagesByPixivId(pixivId);
 
         for (String url : urls) {
             try {
@@ -261,7 +265,7 @@ public class PixivPictureDownloader {
      * @param pixivId
      */
     public void downloadRecommendPictureByPixivId(String pixivId) {
-        List<String> pixivIdList = PixivPictureInfoUtils.getPixivIdsFromAjaxIllustRecommend(pixivId);
+        List<String> pixivIdList = PixivPictureUtils.getPixivIdsFromAjaxIllustRecommend(pixivId);
 
         pixivIdList.forEach(recommendPixivId -> {
             downloadPictureByPixivId(recommendPixivId);
@@ -274,7 +278,7 @@ public class PixivPictureDownloader {
      */
     public void downloadRecommendPictureByPixivIdList(List<String> pixivIdList) {
         // 先获取由这些pixivId所关联推荐的图片pixivId，这里通过Set保证没有重复的，
-        Set<String> recommendPixivIdSet = PixivPictureInfoUtils.getRecommendPixivIdSetByPixivIdList(pixivIdList);
+        Set<String> recommendPixivIdSet = PixivPictureUtils.getRecommendPixivIdSetByPixivIdList(pixivIdList);
 
         if (CollectionUtils.isEmpty(recommendPixivIdSet)) {
             log.warn("获取pixivIdList所关联推荐的所有图片的recommendPixivIdSet为空，其中pixivIdList为：\n{}", JSONObject.toJSONString(pixivIdList));
@@ -312,7 +316,7 @@ public class PixivPictureDownloader {
      * @param pixivId
      */
     public void downloadRecommendPicByPixivIdWithTwoDepth(String pixivId) {
-        List<String> initRecommendPixivIdList = PixivPictureInfoUtils.getPixivIdsFromAjaxIllustRecommend(pixivId);
+        List<String> initRecommendPixivIdList = PixivPictureUtils.getPixivIdsFromAjaxIllustRecommend(pixivId);
 
         Set<String> allRecommendPixivIdSet = new HashSet<>(1024);
 
@@ -322,7 +326,7 @@ public class PixivPictureDownloader {
         // 把第二层关联推荐的都保存下
         for (String recommendPixivId : initRecommendPixivIdList) {
             try {
-                List<String> secondRecommendPixivIdList = PixivPictureInfoUtils.getPixivIdsFromAjaxIllustRecommend(recommendPixivId);
+                List<String> secondRecommendPixivIdList = PixivPictureUtils.getPixivIdsFromAjaxIllustRecommend(recommendPixivId);
 
                 allRecommendPixivIdSet.addAll(secondRecommendPixivIdList);
             } catch (Exception ex) {
@@ -354,7 +358,7 @@ public class PixivPictureDownloader {
      */
     public void downloadRecommendPicAndAuthorWorksByPixivId(String pixivId) {
         // 获取所有推荐图片作者的所有作品图片pixiId
-        Set<String> pixivIds = PixivPictureInfoUtils.getPixivIdsFromRecommendPicAuthorsWorksByPixivId(pixivId);
+        Set<String> pixivIds = PixivPictureUtils.getPixivIdsFromRecommendPicAuthorsWorksByPixivId(pixivId);
 
         //log.info("请求获取到的所有图片pixivId数量为：{}", pixivIds.size());
 
@@ -380,10 +384,30 @@ public class PixivPictureDownloader {
      * @param pixivUserId
      */
     public void downloadAuthorIllustAndManga(String pixivUserId) {
-        Set<String> authorWorksId = PixivPictureInfoUtils.getAuthorIllustAndMangaId(pixivUserId);
+        Set<String> authorWorksId = PixivPictureUtils.getAuthorIllustAndMangaId(pixivUserId);
         for (String pixivId : authorWorksId) {
             // TODO--下面这个虽然可以下载，但
             asyncDownloadPictureByPixivId(pixivId);
         }
+    }
+
+    /**
+     * 下载综合R18每日排行榜图片
+     * @param date 20200402这样的日期字符串
+     */
+    public void downloadRankingDailyR18(String date) {
+        Set<String> pixivIdSet = PixivPictureUtils.getPixivIdsFromRankingDailyR18(date);
+
+        Set<String> errorPixivIdSet = new HashSet<>(16);
+        for (String pixivId : pixivIdSet) {
+            try {
+                asyncDownloadPictureByPixivId(pixivId);
+            } catch(Exception ex) {
+                errorPixivIdSet.add(pixivId);
+                continue;
+            }
+        }
+
+        log.info("下载{}的综合R18每日排行榜图片总数量为{}，其中失败的数量为{}", date, pixivIdSet.size(), errorPixivIdSet.size());
     }
 }
