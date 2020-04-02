@@ -1,10 +1,13 @@
 package org.kiharu.hareru.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.kiharu.hareru.bo.PixivArtworksInterfaceResultContentBO;
 import org.kiharu.hareru.bo.PixivPictureDetailInfoBO;
 import org.kiharu.hareru.pixiv.PixivPictureUtils;
@@ -16,10 +19,9 @@ import org.kiharu.hareru.util.PixivUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 用于下载Pixiv图片的类
@@ -409,5 +411,41 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
         }
 
         log.info("下载{}的综合R18每日排行榜图片总数量为{}，其中失败的数量为{}", date, pixivIdSet.size(), errorPixivIdSet.size());
+    }
+
+    public void downloadRankingDailyR18MultiDays(String endDate, Integer dayNums) {
+        Set<String> pixivIdSet = new HashSet<>(1024);
+        List<String> dateList = new ArrayList<>();
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+
+        // 获取所有的日期（字符串格式）
+        try {
+            Date end = format.parse(endDate);
+            for (int i = 0; i < dayNums; ++i) {
+                String day = DateFormatUtils.format(DateUtils.addDays(end, -i), "yyyyMMdd");
+                dateList.add(day);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        log.info("获取到的从{}往前的{}天的所有日期为：\n{}", endDate, dayNums, JSON.toJSONString(dateList));
+
+        for (String date : dateList) {
+            Set<String> datePixivIdSet = PixivPictureUtils.getPixivIdsFromRankingDailyR18(date);
+            pixivIdSet.addAll(datePixivIdSet);
+        }
+
+        Set<String> errorPixivIdSet = new HashSet<>(16);
+        for (String pixivId : pixivIdSet) {
+            try {
+                asyncDownloadPictureByPixivId(pixivId);
+            } catch(Exception ex) {
+                errorPixivIdSet.add(pixivId);
+                continue;
+            }
+        }
+
+        log.info("下载{}往前的{}天的综合R18每日排行榜图片总数量为{}，其中失败的数量为{}", endDate, dayNums, pixivIdSet.size(), errorPixivIdSet.size());
     }
 }

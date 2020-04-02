@@ -107,6 +107,17 @@ public class PixivDownloadController {
         log.info("SUCCESS");
     }
 
+    /**
+     * 下载多天的综合R18每日排行榜图片
+     * @param endDate
+     * @param dayNums
+     */
+    @GetMapping("/downloadRankingDailyR18MultiDays")
+    public void downloadRankingDailyR18MultiDays(@RequestParam("endDate")String endDate, @RequestParam("dayNums")Integer dayNums) {
+        pixivDownloadServiceImpl.downloadRankingDailyR18MultiDays(endDate, dayNums);
+        log.info("SUCCESS");
+    }
+
 
     /**
      * 测试异步调用，因为异步调用单元测试好像执行完代码项目就结束了，没有后续的异步处理，所以暂时放在这里进行测试

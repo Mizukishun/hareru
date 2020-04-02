@@ -99,4 +99,12 @@ public class PixivDownloadServiceImplTest {
             log.info("醒了");
         }
     }
+
+    @Test
+    public void testdownloadRankingDailyR18MultiDays() {
+        String endDate = "20200305";
+        Integer dayNums = 11;
+        PixivDownloadServiceImpl downloader = new PixivDownloadServiceImpl();
+        downloader.downloadRankingDailyR18MultiDays(endDate, dayNums);
+    }
 }
