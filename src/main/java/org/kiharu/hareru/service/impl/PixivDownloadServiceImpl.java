@@ -142,6 +142,57 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
         log.info("Completed");
     }
 
+    /**
+     * 异步下载图片，同时由上层指定本地保存的文件
+     * @param url 图片下载地址
+     * @param file 需由外层保证此文件已创建了
+     */
+    public void asyncDownloadPixivPicture(String url, File file) {
+        if (file == null || !file.exists()) {
+            log.error("本地要保存的图片文件不存在，请先新建文件");
+            return ;
+        }
+
+        Headers headers = PixivHeadersUtils.getSimpleHeaders();
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .headers(headers)
+                .url(url)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onResponse(Call call, Response response) {
+                try {
+                    log.info("进入异步onResponse，url={}", url);
+                    byte[] bytes = response.body().bytes();
+                    // 下面这里new FileOutputStream(file)默认是按覆盖的方式进行写入的，也即如果之前已经有了同名文件，则会被新下载的覆盖掉之前的
+                    BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));
+                    bufferedOutputStream.write(bytes);
+
+                    bufferedOutputStream.flush();
+                    bufferedOutputStream.close();
+                    bytes = null;
+                    log.info("我送你离开~");
+                } catch (IOException ex) {
+                    StringBuilder errorMsg = new StringBuilder()
+                            .append("异步下载图片保存时出错，filePath=")
+                            .append(file.getAbsolutePath())
+                            .append("\nurl=")
+                            .append(url);
+                    log.error(errorMsg.toString(), ex);
+                }
+            }
+
+            @Override
+            public void onFailure(Call call, IOException ex) {
+                StringBuilder errorMsg = new StringBuilder()
+                        .append("异步请求图片出错，url=")
+                        .append(url);
+                log.error(errorMsg.toString(), ex);
+            }
+        });
+    }
+
 
 
     /**

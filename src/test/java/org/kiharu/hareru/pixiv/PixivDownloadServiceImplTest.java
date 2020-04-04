@@ -1,8 +1,12 @@
 package org.kiharu.hareru.pixiv;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.builder.ToStringExclude;
 import org.junit.jupiter.api.Test;
 import org.kiharu.hareru.service.impl.PixivDownloadServiceImpl;
+
+import java.io.File;
+import java.io.IOException;
 
 @Slf4j
 public class PixivDownloadServiceImplTest {
@@ -107,4 +111,30 @@ public class PixivDownloadServiceImplTest {
         PixivDownloadServiceImpl downloader = new PixivDownloadServiceImpl();
         downloader.downloadRankingDailyR18MultiDays(endDate, dayNums);
     }
+
+    @Test
+    public void testAsyncDownloadPixivPicture2() {
+        String url = "https://i.pximg.net/img-original/img/2020/03/16/21/41/05/80165011_p0.jpg";
+        String filePath = "L:/PixivDownload/UnitTest/80165011_p0.jpg";
+        File file = new File(filePath);
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        PixivDownloadServiceImpl downloadService = new PixivDownloadServiceImpl();
+        downloadService.asyncDownloadPixivPicture(url, file);
+
+        while(true) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            log.info("我好了");
+        }
+    }
+
 }
