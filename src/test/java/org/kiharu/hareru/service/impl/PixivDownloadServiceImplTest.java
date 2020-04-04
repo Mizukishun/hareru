@@ -1,15 +1,23 @@
-package org.kiharu.hareru.pixiv;
+package org.kiharu.hareru.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.builder.ToStringExclude;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.kiharu.hareru.service.impl.PixivDownloadServiceImpl;
+import org.kiharu.hareru.service.PixivDownloadService;
 
 import java.io.File;
 import java.io.IOException;
 
 @Slf4j
 public class PixivDownloadServiceImplTest {
+
+    PixivDownloadService downloader;
+
+    @BeforeEach
+    public void getDownloader() {
+        downloader = new PixivDownloadServiceImpl();
+    }
 
     /*@Test
     public void testDownloadPixivPicture() {
@@ -22,12 +30,13 @@ public class PixivDownloadServiceImplTest {
     }*/
 
 
-    @Test
+    /*@Test
     public void testDownloadPictureByPixivId() {
         String pixivId = "80420349";
         PixivDownloadServiceImpl pixivDownloadServiceImpl = new PixivDownloadServiceImpl();
         pixivDownloadServiceImpl.downloadPictureByPixivId(pixivId);
-    }
+    }*/
+
     @Test
     public void testAsyncDownloadPictureByPixivId() {
         String pixivId = "80420349";
@@ -44,6 +53,14 @@ public class PixivDownloadServiceImplTest {
             }
             log.info("醒了");
         }
+    }
+
+    @Test
+    public void testDownloadPicturesByPixivId() {
+        String pixivId = "78712199";
+        String subject = "p78712199";
+        downloader.downloadPicturesByPixivId(pixivId, subject);
+        whileTrue();
     }
 
 
@@ -85,6 +102,13 @@ public class PixivDownloadServiceImplTest {
             log.info("醒了");
         }
     }
+
+    /*@Test
+    public void testAsyncDownloadMultiPicturesByPixivId() {
+        String pixivId = "78712199";
+        downloader.asyncDownloadMultiPicturesByPixivId(pixivId);
+        whileTrue();
+    }*/
 
     @Test
     public void testDownloadAuthorIllustAndManga() {
@@ -134,6 +158,21 @@ public class PixivDownloadServiceImplTest {
                 e.printStackTrace();
             }
             log.info("我好了");
+        }
+    }
+
+    /**
+     * 对于异步下载的单元测试，需要下面的无限循环保证能继续进行下去
+     */
+    private void whileTrue() {
+        // 用下面这个死循环来让这个单元测试能够进行！
+        while(true){
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            log.info("醒了");
         }
     }
 

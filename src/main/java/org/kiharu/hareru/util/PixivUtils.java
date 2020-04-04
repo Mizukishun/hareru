@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.Headers;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.jsoup.internal.StringUtil;
 import org.kiharu.hareru.bo.PixivPictureUrlInfoBO;
 import org.kiharu.hareru.constant.PixivConstants;
 
@@ -68,7 +69,6 @@ public class PixivUtils {
      * @return
      */
     public static PixivPictureUrlInfoBO getPixivPictureUrlInfoBO(String url) {
-
         if (StringUtils.isEmpty(url)) {
             return null;
         }
@@ -86,7 +86,7 @@ public class PixivUtils {
         int length = pixivPicName.length();
         String suffix = pixivPicName.substring(pixivPicName.lastIndexOf("."), length);
 
-        // 获取pixivId
+        // 获取pixivId，这里如果有多个，也即有pixivId_p0,pixivId_p1,pixivId_p2这样的，则p0的会被删掉_p0，而其他的p1、p2这些则会保留
         int endIndex;
         if (pixivPicName.contains("_p0")) {
             endIndex = pixivPicName.lastIndexOf("_p0");
@@ -152,7 +152,8 @@ public class PixivUtils {
             // 如果最顶层文件夹中已经有跟当前日期同名的文件夹了，则获取跟当前日期同名类似中最大的那个文件夹名称
             File maxFileNameFile = Arrays.stream(topFolder.listFiles())
                     .filter(innerFile -> innerFile.isDirectory())
-                    .filter(innerFile -> innerFile.getName().contains(currentDate))
+                    // 只取包含有日期，同时不含其它非数字字符的文件夹名称
+                    .filter(innerFile -> innerFile.getName().contains(currentDate) && StringUtils.isNumeric(innerFile.getName()))
                     .max((item1, item2) -> item1.getName().compareTo(item2.getName()))
                     .get();
             String maxFileName = maxFileNameFile.getName();
@@ -165,7 +166,8 @@ public class PixivUtils {
                 // 如果已存在的多个跟当前日期类似名称的文件夹，取到最大的那个，在它的基础上以算数加1的方式进行新文件夹的命名
                 Integer maxFileNameInteger = Integer.valueOf(maxFileName);
                 String modifiedCurrentDate = String.valueOf(maxFileNameInteger + 1);
-                filePathSB.append(modifiedCurrentDate).append("/");
+
+                filePathSB.append(modifiedCurrentDate);
             }
         }
 
@@ -173,6 +175,30 @@ public class PixivUtils {
         savedPicFolder.mkdir();
 
         return savedPicFolder;
+    }
+
+    /**
+     * 在getSavedPicFolder()方法创建的文件夹里面在新建一个子文件夹，子文件夹名称由subject指定
+     * @param subject
+     * @return 得到的文件夹路径类似"L:\PixivDownload\{currentDate}\{subject}"
+     */
+    public static File getSavedPicFolderBySubject(String subject) {
+        if (StringUtils.isEmpty(subject)) {
+            // 如果没有传值过来，则用默认的
+            subject = PixivConstants.DEFAULT_SUBJECT_FOR_FOLDER;
+        }
+        File file = PixivConstants.SAVED_PICTURE_TOP_FOLDER;
+        StringBuilder filePath = new StringBuilder()
+                .append(file.getAbsolutePath())
+                .append("/")
+                .append(subject)
+                .append("/");
+
+        File subjectFile = new File(filePath.toString());
+        if (!subjectFile.exists()) {
+            subjectFile.mkdir();
+        }
+        return subjectFile;
     }
 
     /**
@@ -187,7 +213,8 @@ public class PixivUtils {
         }
 
         //File savedPicFolder = getSavedPicFolder();
-        File savedPicFolder = PixivConstants.savedPicFolder;
+        //File savedPicFolder = PixivConstants.SAVED_PICTURE_TOP_FOLDER;
+        File savedPicFolder = getSavedPicFolderBySubject(null);
 
         StringBuilder picFilePath = new StringBuilder()
                 .append(savedPicFolder.getAbsolutePath())
@@ -211,11 +238,66 @@ public class PixivUtils {
         try {
             savedPicFile.createNewFile();
         } catch (IOException e) {
-            e.printStackTrace();
+            StringBuilder errorMsg = new StringBuilder()
+                    .append("创建用于保存图片的本地文件失败，url=")
+                    .append(url);
+            log.error(errorMsg.toString(), e);
         }
 
         return savedPicFile;
+    }
 
+    /**
+     * 获取用于保存图片的文件，包含完整的路径名及文件名
+     * @param url
+     * @param subject
+     * @param pixivUserId
+     * @return 保存的图片完整路径名类似：""
+     */
+    public static File getLocalSavedPicFile(String url, String subject, String pixivUserId) {
+        PixivPictureUrlInfoBO urlInfoBO = getPixivPictureUrlInfoBO(url);
+        if (urlInfoBO == null) {
+            return null;
+        }
+        File picDir = getSavedPicFolderBySubject(subject);
+
+        StringBuilder picFilePath = new StringBuilder()
+                .append(picDir.getAbsolutePath())
+                .append("/")
+                .append("U")
+                .append(pixivUserId)
+                .append("_P")
+                .append(urlInfoBO.getPixivId())
+                .append(urlInfoBO.getSuffix());
+        File resultFile = new File(picFilePath.toString());
+        if (resultFile.exists()) {
+            // 如果之前已有同名图片，则新建一个以{pixivId_timestamp}为名的图片
+            StringBuilder newPicFilePath = new StringBuilder()
+                    .append(picDir.getAbsolutePath())
+                    .append("/")
+                    .append("U")
+                    .append(pixivUserId)
+                    .append("_P")
+                    .append(urlInfoBO.getPixivId())
+                    .append("_")
+                    .append(System.currentTimeMillis())
+                    .append(urlInfoBO.getSuffix());
+            resultFile = new File(newPicFilePath.toString());
+        }
+
+        try {
+            resultFile.createNewFile();
+        } catch (IOException e) {
+            StringBuilder errorMsg = new StringBuilder()
+                    .append("创建用于保存图片的本地文件失败,url=")
+                    .append(url).append("subject=")
+                    .append(subject)
+                    .append("pixivUserId=")
+                    .append(pixivUserId);
+            log.error(errorMsg.toString(), e);
+        }
+
+        return resultFile;
     }
 
 }

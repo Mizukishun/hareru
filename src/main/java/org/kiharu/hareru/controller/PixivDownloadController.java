@@ -1,6 +1,7 @@
 package org.kiharu.hareru.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.kiharu.hareru.constant.PixivConstants;
 import org.kiharu.hareru.service.impl.PixivDownloadServiceImpl;
 import org.kiharu.hareru.pixiv.PixivPictureUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,8 @@ public class PixivDownloadController {
      */
     @GetMapping("/simpleDownloadByPixivId")
     public String simpleDownloadByPixivId(@RequestParam("pixivId") String pixivId) {
-        pixivDownloadServiceImpl.downloadPictureByPixivId(pixivId);
+        StringBuilder subject = new StringBuilder(PixivConstants.SUBJECT_PREFIX_PIXIV_ID).append(pixivId);
+        pixivDownloadServiceImpl.downloadPicturesByPixivId(pixivId, subject.toString());
         return "成功";
     }
 
@@ -89,9 +91,18 @@ public class PixivDownloadController {
     @GetMapping("/downloadRecommendAuthorWorksByPixivId")
     public String downloadRecommendAuthorWorksByPixivId(@RequestParam("pixivId")String pixivId) {
         Set<String> pixivIds = PixivPictureUtils.getPixivIdsFromRecommendPicAuthorsWorksByPixivId(pixivId);
+        // 保存图片的文件夹名称
+        StringBuilder subject = new StringBuilder(PixivConstants.SUBJECT_PREFIX_RECOMMEND_AUTHOR).append(pixivId);
         log.info("根据pixivId={}获取到的关联推荐图片的所有作者的所有图片数量为：{}", pixivId, pixivIds.size());
         for (String downloadPixivId : pixivIds) {
-            pixivDownloadServiceImpl.asyncDownloadPictureByPixivId(downloadPixivId);
+            try {
+                pixivDownloadServiceImpl.downloadPicturesByPixivId(downloadPixivId, subject.toString());
+            } catch (Exception ex) {
+                StringBuilder errorMsg = new StringBuilder("下载图片pixivId=")
+                        .append(downloadPixivId)
+                        .append("出错");
+                log.error(errorMsg.toString(), ex);
+            }
         }
 
         return "SUCCESS";
