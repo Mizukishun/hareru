@@ -37,7 +37,7 @@ public class PixivDownloadServiceImplTest {
         pixivDownloadServiceImpl.downloadPictureByPixivId(pixivId);
     }*/
 
-    @Test
+    /*@Test
     public void testAsyncDownloadPictureByPixivId() {
         String pixivId = "80420349";
         PixivDownloadServiceImpl pixivDownloadServiceImpl = new PixivDownloadServiceImpl();
@@ -53,7 +53,7 @@ public class PixivDownloadServiceImplTest {
             }
             log.info("醒了");
         }
-    }
+    }*/
 
     @Test
     public void testDownloadPicturesByPixivId() {
@@ -76,18 +76,10 @@ public class PixivDownloadServiceImplTest {
      * 需要在整个项目启动之后才能进行异步下载的测试，可以参见/pixiv/testAsyncDownload接口
      * -- 加入后面的死循环后能够正常执行异步操作了
      */
-    @Test
+    /*@Test
     public void testAsyncDownloadPixivPicture() {
         String url = "https://i.pximg.net/img-original/img/2020/03/29/07/31/42/80420349_p2.jpg";
-        /*File file = new File("L:/PixivDownload/2020040110/unitTest.jpg");
-        if (!file.exists()) {
-            file.getParentFile().mkdirs();
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }*/
+
         PixivDownloadServiceImpl pixivDownloadServiceImpl = new PixivDownloadServiceImpl();
         pixivDownloadServiceImpl.asyncDownloadPixivPicture(url);
 
@@ -101,7 +93,7 @@ public class PixivDownloadServiceImplTest {
             }
             log.info("醒了");
         }
-    }
+    }*/
 
     /*@Test
     public void testAsyncDownloadMultiPicturesByPixivId() {

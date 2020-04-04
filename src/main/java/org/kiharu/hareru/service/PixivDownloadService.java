@@ -18,7 +18,7 @@ public interface PixivDownloadService {
      * 尝试采用异步的方式下载图片，看下载速度是否更好点
      * @param url 下载图片的地址
      */
-    void asyncDownloadPixivPicture(String url);
+    //void asyncDownloadPixivPicture(String url);
 
     /**
      * 异步下载图片，同时由上层指定本地保存的文件
@@ -37,7 +37,7 @@ public interface PixivDownloadService {
      * 根据pixivId下载其对应的所有图片，这里使用异步下载图片
      * @param pixivId
      */
-    void asyncDownloadPictureByPixivId(String pixivId);
+    //void asyncDownloadPictureByPixivId(String pixivId);
 
     /**
      * 根据pixivId下载其对应的可能的多张图片

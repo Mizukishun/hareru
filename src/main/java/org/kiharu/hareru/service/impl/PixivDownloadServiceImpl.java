@@ -105,7 +105,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
      * 尝试采用异步的方式下载图片，看下载速度是否更好点
      * @param url 下载图片的地址
      */
-    @Override
+    /*@Override
     public void asyncDownloadPixivPicture(String url){
         Headers headers = PixivHeadersUtils.getSimpleHeaders();
         OkHttpClient client = new OkHttpClient.Builder().build();
@@ -142,67 +142,13 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
             }
         });
         log.info("Completed");
-    }
-
-    /**
-     * 异步下载图片，同时由上层指定本地保存的文件
-     * @param url 图片下载地址
-     * @param file 需由外层保证此文件已创建了
-     */
-    @Override
-    public void asyncDownloadPixivPicture(String url, File file) {
-        if (file == null || !file.exists()) {
-            log.error("本地要保存的图片文件不存在，请先新建文件");
-            return ;
-        }
-
-        Headers headers = PixivHeadersUtils.getSimpleHeaders();
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .headers(headers)
-                .url(url)
-                .build();
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onResponse(Call call, Response response) {
-                try {
-                    log.info("进入异步onResponse，url={}", url);
-                    byte[] bytes = response.body().bytes();
-                    // 下面这里new FileOutputStream(file)默认是按覆盖的方式进行写入的，也即如果之前已经有了同名文件，则会被新下载的覆盖掉之前的
-                    BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));
-                    bufferedOutputStream.write(bytes);
-
-                    bufferedOutputStream.flush();
-                    bufferedOutputStream.close();
-                    bytes = null;
-                    log.info("我送你离开~");
-                } catch (IOException ex) {
-                    StringBuilder errorMsg = new StringBuilder()
-                            .append("异步下载图片保存时出错，filePath=")
-                            .append(file.getAbsolutePath())
-                            .append("\nurl=")
-                            .append(url);
-                    log.error(errorMsg.toString(), ex);
-                }
-            }
-
-            @Override
-            public void onFailure(Call call, IOException ex) {
-                StringBuilder errorMsg = new StringBuilder()
-                        .append("异步请求图片出错，url=")
-                        .append(url);
-                log.error(errorMsg.toString(), ex);
-            }
-        });
-    }
-
-
+    }*/
 
     /**
      * 根据pixivId下载其对应的所有图片
      * @param pixivId
      */
-    @Override
+    /*@Override
     public void asyncDownloadPictureByPixivId(String pixivId) {
         if (StringUtils.isEmpty(pixivId)) {
             log.error("downloadPictureByPixivId方法的入参pxivId不能为空");
@@ -224,7 +170,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
                 continue;
             }
         }
-    }
+    }*/
 
     /**
      * 根据pixivId下载其对应的所有图片，这里使用异步下载图片
@@ -270,6 +216,59 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
             }
         }
     }*/
+
+    /**
+     * 异步下载图片，同时由上层指定本地保存的文件
+     * @param url 图片下载地址
+     * @param file 需由外层保证此文件已创建了
+     */
+    @Override
+    public void asyncDownloadPixivPicture(String url, File file) {
+        if (file == null || !file.exists()) {
+            log.error("本地要保存的图片文件不存在，请先新建文件");
+            return ;
+        }
+
+        Headers headers = PixivHeadersUtils.getSimpleHeaders();
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .headers(headers)
+                .url(url)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onResponse(Call call, Response response) {
+                try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));){
+                    log.info("进入异步onResponse，url={}", url);
+                    byte[] bytes = response.body().bytes();
+                    // 下面这里new FileOutputStream(file)默认是按覆盖的方式进行写入的，也即如果之前已经有了同名文件，则会被新下载的覆盖掉之前的
+
+                    bufferedOutputStream.write(bytes);
+
+                    // 这里主动进行关闭
+                    bufferedOutputStream.flush();
+                    bufferedOutputStream.close();
+                    bytes = null;
+                    log.info("我送你离开~");
+                } catch (IOException ex) {
+                    StringBuilder errorMsg = new StringBuilder()
+                            .append("异步下载图片保存时出错，filePath=")
+                            .append(file.getAbsolutePath())
+                            .append("\nurl=")
+                            .append(url);
+                    log.error(errorMsg.toString(), ex);
+                }
+            }
+
+            @Override
+            public void onFailure(Call call, IOException ex) {
+                StringBuilder errorMsg = new StringBuilder()
+                        .append("异步请求图片出错，url=")
+                        .append(url);
+                log.error(errorMsg.toString(), ex);
+            }
+        });
+    }
 
     /**
      * 下载pixivId对应的所有图片，可能只有一张，也可能有多张

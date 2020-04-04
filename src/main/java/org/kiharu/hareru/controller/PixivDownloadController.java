@@ -133,24 +133,15 @@ public class PixivDownloadController {
     /**
      * 测试异步调用，因为异步调用单元测试好像执行完代码项目就结束了，没有后续的异步处理，所以暂时放在这里进行测试
      */
-    @GetMapping("/testAsyncDownload")
+    /*@GetMapping("/testAsyncDownload")
     public void testAsyncDownloadPixivPicture() {
         String url = "https://i.pximg.net/img-original/img/2020/03/29/07/31/42/80420349_p2.jpg";
-        /*File file = new File("L:/PixivDownload/2020040110/unitTest.jpg");
-        if (!file.exists()) {
-            file.getParentFile().mkdirs();
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }*/
         PixivDownloadServiceImpl pixivDownloadServiceImpl = new PixivDownloadServiceImpl();
         //pixivPictureDownloader.asyncDownloadPixivPicture(url, file);
         pixivDownloadServiceImpl.asyncDownloadPixivPicture(url);
 
         log.info("SUCCESS");
-    }
+    }*/
 
     /**
      * 测试Controller
