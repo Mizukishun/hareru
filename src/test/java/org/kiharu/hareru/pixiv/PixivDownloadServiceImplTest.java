@@ -7,7 +7,7 @@ import org.kiharu.hareru.service.impl.PixivDownloadServiceImpl;
 @Slf4j
 public class PixivDownloadServiceImplTest {
 
-    @Test
+    /*@Test
     public void testDownloadPixivPicture() {
         String url = "https://i.pximg.net/img-original/img/2020/03/29/07/31/42/80420349_p2.jpg";
         PixivDownloadServiceImpl pixivDownloadServiceImpl = new PixivDownloadServiceImpl();
@@ -15,7 +15,7 @@ public class PixivDownloadServiceImplTest {
         pixivDownloadServiceImpl.downloadPixivPicture(url);
         long end = System.currentTimeMillis();
         log.info("下载一张图片所用的时间为：{}秒", (end - begin) / 1000);
-    }
+    }*/
 
 
     @Test

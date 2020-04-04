@@ -11,7 +11,7 @@ public interface PixivDownloadService {
      * 下载指定url的图片到本地
      * @param url
      */
-    void downloadPixivPicture(String url);
+    //void downloadPixivPicture(String url);
 
     /**
      * 尝试采用异步的方式下载图片，看下载速度是否更好点

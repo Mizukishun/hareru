@@ -34,7 +34,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
      * 下载指定url的图片到本地
      * @param url
      */
-    public void downloadPixivPicture(String url) {
+    /*public void downloadPixivPicture(String url) {
         // TODO--测试用，之后删除
         long begin = System.currentTimeMillis();
         long stage1 = 0, stage2 = 0, stage3 = 0, stage4 = 0, stage5 = 0;
@@ -74,18 +74,18 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
             while ((b = bufferedInputStream.read()) != -1) {
                 bufferedOutputStream.write(b);
             }
-            /*byte[] bytes = new byte[2048];
+            *//*byte[] bytes = new byte[2048];
             int length = 0;
             int off = 0;
             while((length = bufferedInputStream.read(bytes)) != -1) {
                 bufferedOutputStream.write(bytes);
-            }*/
+            }*//*
 
             // TODO--测试用，之后删除
             stage4 = System.currentTimeMillis();
 
-            /*fileOutputStream.flush();
-            fileOutputStream.close();*/
+            *//*fileOutputStream.flush();
+            fileOutputStream.close();*//*
             bufferedOutputStream.flush();
             bufferedOutputStream.close();
         } catch (IOException ex) {
@@ -98,7 +98,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
         stage5 = System.currentTimeMillis();
 
         log.info("下载图片url={}所用的各个阶段时间为：stage1={}ms, stage2={}ms, stage3={}ms, stage4={}ms, stage5={}ms，总时间total={}ms", url, stage1 - begin, stage2 - stage1, stage3 - stage2, stage4 - stage3, stage5 - stage4, stage5 - begin);
-    }
+    }*/
 
     /**
      * 尝试采用异步的方式下载图片，看下载速度是否更好点
@@ -109,25 +109,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
         OkHttpClient client = new OkHttpClient.Builder().build();
         Request request = new Request.Builder().headers(headers).url(url).build();
         File savedPicFile = PixivUtils.getSavedPicFile(url);
-        //TODO--测试用，之后删除
-        //long begin = System.currentTimeMillis();
-        /*try (Response response = client.newCall(request).execute()) {
-            //TODO--测试用，之后删除
-            long stage1 = System.currentTimeMillis();
-            byte[] bytes = response.body().bytes();
-            log.info("这里获取到的字节长度长度为:{}", bytes.length);
-            long stage2 = System.currentTimeMillis();
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file, true));
-            bufferedOutputStream.write(bytes);
-            bufferedOutputStream.flush();
-            bufferedOutputStream.close();
-            //TODO--测试用，之后删除
-            long stage3 = System.currentTimeMillis();
-            log.info("下载所用总时间={}ms,stage1={}ms,stage2={}ms,stage3={}ms", stage3 - begin, stage1 - begin, stage2 - stage1, stage3 - stage2);
-        } catch (IOException ex) {
-            StringBuilder errorMsg = new StringBuilder().append("异步下载图片保存时出错,file=").append(file.getAbsolutePath());
-            log.error(errorMsg.toString(), ex);
-        }*/
+
         Call call = client.newCall(request);
         call.enqueue(new Callback() {
             @Override
@@ -186,7 +168,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
         }
         for (String url : urls) {
             try {
-                downloadPixivPicture(url);
+                asyncDownloadPixivPicture(url);
             } catch (Exception ex) {
                 // 下载pixivId对应的所有图片之一出错时，记录日志，跳过--TODO--之后再补充针对出错的处理
                 StringBuilder errorMsg = new StringBuilder().append("下载图片出错，图片地址url=").append(url);
@@ -231,7 +213,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
 
         for (String url : urls) {
             try {
-                downloadPixivPicture(url);
+                asyncDownloadPixivPicture(url);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 continue;
