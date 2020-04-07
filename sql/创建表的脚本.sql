@@ -16,7 +16,7 @@ CREATE TABLE `pixiv_db`.`pixiv_picture_info` (
 		pic_suffix VARCHAR(10) DEFAULT NULL COMMENT '图片类型后缀',
 		r18_restrict TINYINT(1) DEFAULT NULL COMMENT '是否R18',
 		width INT(11) UNSIGNED DEFAULT NULL COMMENT '宽度',
-		heigth INT(11) UNSIGNED DEFAULT NULL COMMENT '高度',
+		height INT(11) UNSIGNED DEFAULT NULL COMMENT '高度',
 		page_count INT(11) UNSIGNED DEFAULT NULL COMMENT '同一pixivId对应图片的数量',
 		bookmark_count INT(11) UNSIGNED DEFAULT NULL COMMENT '收藏数',
 		like_count INT(11) UNSIGNED DEFAULT NULL COMMENT '赞数',
