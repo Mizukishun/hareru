@@ -165,6 +165,9 @@ public class PixivUtils {
             } else {
                 // 如果已存在的多个跟当前日期类似名称的文件夹，取到最大的那个，在它的基础上以算数加1的方式进行新文件夹的命名
                 Integer maxFileNameInteger = Integer.valueOf(maxFileName);
+                // 会出现这种问题，如果已经有了202004049这个文件夹 ，因为只是加1，所以下一个就是2020204050，这样在20200404这天之后所有的都会是在202004050这个文件夹中了
+                // TODO--要处理下
+
                 String modifiedCurrentDate = String.valueOf(maxFileNameInteger + 1);
 
                 filePathSB.append(modifiedCurrentDate);
