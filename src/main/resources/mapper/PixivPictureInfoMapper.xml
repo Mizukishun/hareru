@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.kiharu.hareru.mapper.PixivPictureInfoMapper">
+    <resultMap id="ColumnResultMap" type="org.kiharu.hareru.entity.PixivPictureInfo">
+        <result column="id" jdbcType="INTEGER" property="id" />
+        <result column="pixiv_id" jdbcType="VARCHAR" property="pixivId" />
+        <result column="author_id" jdbcType="VARCHAR" property="authorId" />
+        <result column="author_name" jdbcType="VARCHAR" property="authorName" />
+        <result column="original_url" jdbcType="VARCHAR" property="originalUrl" />
+        <result column="title" jdbcType="VARCHAR" property="title" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="pic_suffix" jdbcType="VARCHAR" property="picSuffix" />
+        <result column="r18_restrict" jdbcType="TINYINT" property="r18Restrict" />
+        <result column="width" jdbcType="INTEGER" property="width" />
+        <result column="height" jdbcType="INTEGER" property="height" />
+        <result column="page_count" jdbcType="INTEGER" property="pageCount" />
+        <result column="bookmark_count" jdbcType="INTEGER" property="bookmarkCount" />
+        <result column="like_count" jdbcType="INTEGER" property="likeCount" />
+        <result column="view_count" jdbcType="INTEGER" property="viewCount" />
+        <result column="comment_count" jdbcType="INTEGER" property="commentCount" />
+        <result column="response_count" jdbcType="INTEGER" property="responseCount" />
+        <result column="mini_url" jdbcType="VARCHAR" property="miniUrl" />
+        <result column="thumb_url" jdbcType="VARCHAR" property="thumbUrl" />
+        <result column="small_url" jdbcType="VARCHAR" property="smallUrl" />
+        <result column="regular_url" jdbcType="VARCHAR" property="regularUrl" />
+        <result column="upload_date" jdbcType="VARCHAR" property="uploadDate" />
+        <result column="upload_time" jdbcType="VARCHAR" property="uploadTime" />
+        <result column="local_pic_path" jdbcType="VARCHAR" property="localPicPath" />
+        <result column="local_pic_name" jdbcType="VARCHAR" property="localPicName" />
+        <result column="pic_size_b" jdbcType="INTEGER" property="picSizeB" />
+        <result column="pic_size_kb" jdbcType="INTEGER" property="picSizeKB" />
+        <result column="pic_size_mb" jdbcType="INTEGER" property="picSizeMB" />
+        <result column="download_success" jdbcType="INTEGER" property="downloadSuccess" />
+        <result column="add_time" jdbcType="TIMESTAMP" property="addTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    </resultMap>
+
+    <!--<sql id="allColumns">
+        author_id,author_name,bookmark_count,comment_count,description,download_success,height,id,
+        like_count,local_pic_name,local_pic_path,mini_url,original_url,page_count,pic_size_b,pic_size_kb,
+        pic_size_mb,pic_suffix,pixiv_id,r18_restrict,regular_url,response_count,small_url,thumb_url,title,
+        update_time,upload_date,upload_time,view_count,width,add_time
+    </sql>-->
+
+    <sql id="allColumns">
+        id,pixiv_id,author_id,author_name,original_url,title,description,pic_suffix,r18_restrict,
+        width,height,page_count,bookmark_count,like_count,view_count,comment_count,response_count,
+        mini_url,thumb_url,small_url,regular_url,upload_date,upload_time,local_pic_path,local_pic_name,
+        pic_size_b,pic_size_kb,pic_size_mb,download_success,add_time,update_time
+    </sql>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO pixiv_picture_info(id,pixiv_id,author_id,author_name,original_url,title,description,pic_suffix,r18_restrict,
+        width,height,page_count,bookmark_count,like_count,view_count,comment_count,response_count,
+        mini_url,thumb_url,small_url,regular_url,upload_date,upload_time,local_pic_path,local_pic_name,
+        pic_size_b,pic_size_kb,pic_size_mb,download_success)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+        (
+            #{item.id, jdbcType=INTEGER},
+            #{item.pixivId, jdbcType=VARCHAR},
+            #{item.authorId, jdbcType=VARCHAR},
+            #{item.authorName, jdbcType=VARCHAR},
+            #{item.originalUrl, jdbcType=VARCHAR},
+            #{item.title, jdbcType=VARCHAR},
+            #{item.description, jdbcType=VARCHAR},
+            #{item.picSuffix, jdbcType=VARCHAR},
+            #{item.r18Restrict, jdbcType=TINYINT},
+            #{item.width, jdbcType=INTEGER},
+            #{item.height, jdbcType=INTEGER},
+            #{item.pageCount, jdbcType=INTEGER},
+            #{item.bookmarkCount, jdbcType=INTEGER},
+            #{item.likeCount, jdbcType=INTEGER},
+            #{item.viewCount, jdbcType=INTEGER},
+            #{item.commentCount, jdbcType=INTEGER},
+            #{item.responseCount, jdbcType=INTEGER},
+            #{item.miniUrl, jdbcType=VARCHAR},
+            #{item.thumbUrl, jdbcType=VARCHAR},
+            #{item.smallUrl, jdbcType=VARCHAR},
+            #{item.regularUrl, jdbcType=VARCHAR},
+            #{item.uploadDate, jdbcType=VARCHAR},
+            #{item.uploadTime, jdbcType=VARCHAR},
+            #{item.localPicPath, jdbcType=VARCHAR},
+            #{item.localPicName, jdbcType=VARCHAR},
+            #{item.picSizeB, jdbcType=INTEGER},
+            #{item.picSizeKB, jdbcType=INTEGER},
+            #{item.picSizeMB, jdbcType=INTEGER},
+            #{item.downloadSuccess, jdbcType=TIMESTAMP}
+        )
+        </foreach>
+    </insert>
+
+
+
+</mapper>

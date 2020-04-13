@@ -5,19 +5,24 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kiharu.hareru.service.PixivDownloadService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
 import java.io.IOException;
 
 @Slf4j
+@SpringBootTest
 public class PixivDownloadServiceImplTest {
 
-    PixivDownloadService downloader;
+    @Autowired
+    private PixivDownloadService pixivDownloadService;
 
-    @BeforeEach
+    /*@BeforeEach
     public void getDownloader() {
         downloader = new PixivDownloadServiceImpl();
-    }
+    }*/
 
     /*@Test
     public void testDownloadPixivPicture() {
@@ -59,7 +64,7 @@ public class PixivDownloadServiceImplTest {
     public void testDownloadPicturesByPixivId() {
         String pixivId = "78712199";
         String subject = "p78712199";
-        downloader.downloadPicturesByPixivId(pixivId, subject);
+        pixivDownloadService.downloadPicturesByPixivId(pixivId, subject);
         whileTrue();
     }
 
@@ -151,6 +156,12 @@ public class PixivDownloadServiceImplTest {
             }
             log.info("我好了");
         }
+    }
+
+    @Test
+    public void testSavePicInfoTest() {
+        String pixivId = "71006593";
+        pixivDownloadService.savePicInfoTest(pixivId);
     }
 
     /**

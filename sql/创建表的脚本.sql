@@ -7,8 +7,8 @@ use pixiv_db;
 DROP TABLE IF EXISTS `pixiv_db`.`pixiv_picture_info`;
 CREATE TABLE `pixiv_db`.`pixiv_picture_info` (
     id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键，自增ID',
-    pixiv_id INT(11) UNSIGNED DEFAULT NULL COMMENT 'P站图片ID',
-    author_id INT(11) UNSIGNED DEFAULT NULL COMMENT '图片作者ID',
+    pixiv_id VARCHAR(256) DEFAULT NULL COMMENT 'P站图片ID',
+    author_id VARCHAR(256) DEFAULT NULL COMMENT '图片作者ID',
     author_name VARCHAR(256) DEFAULT NULL COMMENT '图片作者名称',
     original_url VARCHAR(1024) DEFAULT NULL COMMENT '原始图片地址',
     title VARCHAR(256) DEFAULT NULL COMMENT '图片标题',
@@ -34,6 +34,7 @@ CREATE TABLE `pixiv_db`.`pixiv_picture_info` (
     pic_size_b INT(11) UNSIGNED DEFAULT NULL COMMENT '图片大小，以B为单位',
     pic_size_kb INT(11) UNSIGNED DEFAULT NULL COMMENT '图片大小，以KB为单位',
     pic_size_mb INT(11) UNSIGNED DEFAULT NULL COMMENT '图片大小，以MB为单位',
+    download_success TINYINT(1) DEFAULT 1 COMMENT '是否下载成功,0-下载失败，1-下载成功',
     add_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '新建记录时间',
     update_time TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新记录时间',
     PRIMARY KEY (id),

@@ -11,12 +11,15 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.kiharu.hareru.bo.PixivArtworksInterfaceResultContentBO;
 import org.kiharu.hareru.bo.PixivPictureDetailInfoBO;
 import org.kiharu.hareru.constant.PixivConstants;
+import org.kiharu.hareru.entity.PixivPictureInfo;
+import org.kiharu.hareru.mapper.PixivPictureInfoMapper;
 import org.kiharu.hareru.pixiv.PixivPictureUtils;
 import org.kiharu.hareru.pixiv.PixivRequestUtils;
 import org.kiharu.hareru.pixiv.PixivResultParser;
 import org.kiharu.hareru.service.PixivDownloadService;
 import org.kiharu.hareru.util.PixivHeadersUtils;
 import org.kiharu.hareru.util.PixivUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -30,6 +33,9 @@ import java.util.*;
 @Slf4j
 @Service
 public class PixivDownloadServiceImpl implements PixivDownloadService {
+
+    @Autowired
+    private PixivPictureInfoMapper pixivPictureInfoMapper;
 
     /**
      * 下载指定url的图片到本地
@@ -545,5 +551,46 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
         }
 
         log.info("下载{}往前的{}天的综合R18每日排行榜图片总数量为{}，其中失败的数量为{}", endDate, dayNums, pixivIdSet.size(), errorPixivIdSet.size());
+    }
+
+    /**
+     * 测试保存图片信息
+     * @param pixivId
+     */
+    @Override
+    public void savePicInfoTest(String pixivId) {
+        String respHtml = PixivRequestUtils.getRespHtmlFromArtworksInterface(pixivId).orElse("");
+        String content = PixivResultParser.getArtworksResultContent(respHtml);
+        PixivArtworksInterfaceResultContentBO resultContentBO = PixivResultParser.parseArtworksResult(content);
+        if (resultContentBO == null || resultContentBO.getPictureDetailInfoBO() == null) {
+            return;
+        }
+        PixivPictureDetailInfoBO detailInfoBO = resultContentBO.getPictureDetailInfoBO();
+
+        PixivPictureInfo pixivPictureInfo = new PixivPictureInfo();
+        pixivPictureInfo.setPixivId(pixivId);
+        pixivPictureInfo.setAuthorId(detailInfoBO.getUserId());
+        pixivPictureInfo.setOriginalUrl(detailInfoBO.getOriginalUrl());
+        pixivPictureInfo.setAuthorName(detailInfoBO.getUserName());
+        pixivPictureInfo.setTitle(detailInfoBO.getTitle());
+        pixivPictureInfo.setDescription(detailInfoBO.getDescription());
+        pixivPictureInfo.setMiniUrl(detailInfoBO.getMiniUrl());
+        pixivPictureInfo.setThumbUrl(detailInfoBO.getThumbUrl());
+        pixivPictureInfo.setSmallUrl(detailInfoBO.getSmallUrl());
+        pixivPictureInfo.setRegularUrl(detailInfoBO.getRegularUrl());
+        pixivPictureInfo.setPageCount(detailInfoBO.getPageCount());
+        pixivPictureInfo.setWidth(detailInfoBO.getWidth());
+        pixivPictureInfo.setHeight(detailInfoBO.getHeight());
+        pixivPictureInfo.setBookmarkCount(detailInfoBO.getBookmarkCount());
+        pixivPictureInfo.setLikeCount(detailInfoBO.getLikeCount());
+        pixivPictureInfo.setCommentCount(detailInfoBO.getCommentCount());
+        pixivPictureInfo.setResponseCount(detailInfoBO.getResponseCount());
+        pixivPictureInfo.setViewCount(detailInfoBO.getViewCount());
+
+        List<PixivPictureInfo> list = new ArrayList<>(16);
+        list.add(pixivPictureInfo);
+
+        pixivPictureInfoMapper.batchInsert(list);
+
     }
 }

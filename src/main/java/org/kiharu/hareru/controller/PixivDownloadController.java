@@ -149,6 +149,7 @@ public class PixivDownloadController {
     @GetMapping("/test")
     public String test() {
         log.info("测试Controller接口");
+        pixivDownloadServiceImpl.savePicInfoTest("71006593");
         return "SUCCESS";
     }
 }

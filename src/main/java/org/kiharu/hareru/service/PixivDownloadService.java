@@ -96,4 +96,6 @@ public interface PixivDownloadService {
      * @param dayNums 天数，如果为正，则是endDate之前的天数；如果是负，则是endDate之后的天数，但最多知道今天
      */
     void downloadRankingDailyR18MultiDays(String endDate, Integer dayNums);
+
+    void savePicInfoTest(String pixivId);
 }
