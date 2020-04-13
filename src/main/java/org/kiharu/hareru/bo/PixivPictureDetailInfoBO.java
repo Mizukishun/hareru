@@ -20,6 +20,10 @@ public class PixivPictureDetailInfoBO implements Serializable {
     private String id;
     private String title;
     private String description;
+    /**
+     * 图片类型
+     * 0-插画，1-漫画，2-动图
+     */
     private Integer illustType;
     private Date createDate;
     private Date uploadDate;

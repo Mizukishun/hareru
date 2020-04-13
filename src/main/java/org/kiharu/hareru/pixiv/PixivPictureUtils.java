@@ -3,10 +3,13 @@ package org.kiharu.hareru.pixiv;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.kiharu.hareru.bo.PixivAjaxIllustPagesUrlInfoBO;
 import org.kiharu.hareru.bo.PixivArtworksInterfaceResultContentBO;
 import org.kiharu.hareru.bo.PixivAuthorProfileBO;
 import org.kiharu.hareru.bo.PixivPictureDetailInfoBO;
 import org.kiharu.hareru.constant.PixivConstants;
+import org.kiharu.hareru.entity.PixivPictureInfo;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -150,6 +153,19 @@ public class PixivPictureUtils {
     }
 
     /**
+     * 获取pixivId对应的多张（或一张）图片的信息
+     * @param pixivId
+     * @return
+     */
+    public static List<PixivAjaxIllustPagesUrlInfoBO> getUrlsInfoFromAjaxIllustPagesByPixivId(String pixivId) {
+        // 获取ajax/illust/{pixivId}/pages接口的返回结果
+        String respJSONStr = PixivRequestUtils.getResponseFromAjaxIllustPage(pixivId).orElse("");
+        // 从接口返回结果中解析出多张图片的信息
+        List<PixivAjaxIllustPagesUrlInfoBO> result = PixivResultParser.getUrlsInfoFromAjaxIllustPageResult(respJSONStr);
+        return result;
+    }
+
+    /**
      * 根据pixivId获取其作者的所有作品的pixivId
      * @param pixivId
      * @return
@@ -228,6 +244,37 @@ public class PixivPictureUtils {
         result.addAll(pixivIdSet2);
 
         return result;
+    }
+
+    public static PixivPictureInfo convertDetailInfoBO2Entity(PixivPictureDetailInfoBO detailInfoBO) {
+        PixivPictureInfo pixivPictureInfo = new PixivPictureInfo();
+
+        pixivPictureInfo.setPixivId(detailInfoBO.getId());
+        pixivPictureInfo.setAuthorId(detailInfoBO.getUserId());
+        pixivPictureInfo.setOriginalUrl(detailInfoBO.getOriginalUrl());
+        pixivPictureInfo.setAuthorName(detailInfoBO.getUserName());
+        pixivPictureInfo.setTitle(detailInfoBO.getTitle());
+        pixivPictureInfo.setMiniUrl(detailInfoBO.getMiniUrl());
+        pixivPictureInfo.setThumbUrl(detailInfoBO.getThumbUrl());
+        pixivPictureInfo.setSmallUrl(detailInfoBO.getSmallUrl());
+        pixivPictureInfo.setRegularUrl(detailInfoBO.getRegularUrl());
+        pixivPictureInfo.setPageCount(detailInfoBO.getPageCount());
+        pixivPictureInfo.setWidth(detailInfoBO.getWidth());
+        pixivPictureInfo.setHeight(detailInfoBO.getHeight());
+        pixivPictureInfo.setBookmarkCount(detailInfoBO.getBookmarkCount());
+        pixivPictureInfo.setLikeCount(detailInfoBO.getLikeCount());
+        pixivPictureInfo.setCommentCount(detailInfoBO.getCommentCount());
+        pixivPictureInfo.setResponseCount(detailInfoBO.getResponseCount());
+        pixivPictureInfo.setViewCount(detailInfoBO.getViewCount());
+
+        // 为了防止description字段超出数据库长度，这里进行了裁剪
+        /*String description = detailInfoBO.getDescription();
+        if (description.length() > 1024) {
+            description = description.substring(0, 1000);
+        }
+        pixivPictureInfo.setDescription(description);*/
+
+        return pixivPictureInfo;
     }
 
 }

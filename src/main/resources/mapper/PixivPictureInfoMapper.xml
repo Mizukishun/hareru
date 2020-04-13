@@ -85,7 +85,7 @@
             #{item.picSizeB, jdbcType=INTEGER},
             #{item.picSizeKB, jdbcType=INTEGER},
             #{item.picSizeMB, jdbcType=INTEGER},
-            #{item.downloadSuccess, jdbcType=TIMESTAMP}
+            #{item.downloadSuccess, jdbcType=INTEGER}
         )
         </foreach>
     </insert>

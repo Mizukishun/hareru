@@ -88,7 +88,7 @@ public class PixivResultParser {
             pictureDetailInfoBO.setIllustComment(jsonIllust.getString("illustComment"));
             pictureDetailInfoBO.setId(jsonIllust.getString("id"));
             pictureDetailInfoBO.setTitle(jsonIllust.getString("title"));
-            pictureDetailInfoBO.setDescription(jsonIllust.getString("description"));
+            //pictureDetailInfoBO.setDescription(jsonIllust.getString("description"));
             pictureDetailInfoBO.setIllustType(jsonIllust.getInteger("illustType"));
             pictureDetailInfoBO.setCreateDate(jsonIllust.getDate("createDate"));
             pictureDetailInfoBO.setUploadDate(jsonIllust.getDate("uploadDate"));
@@ -201,6 +201,47 @@ public class PixivResultParser {
         //log.info("解析ajax/illust/{pixivId}/pages接口返回结果的respJSONStr=\n{}\n得到的原始图片地址有：\n{}", respJSONStr, JSON.toJSON(originalUrls));
 
         return originalUrls;
+    }
+
+
+    /**
+     * 从https://www.pixiv.net/ajax/illust/80391469/pages接口返回结果中解析出多张图片的具体信息
+     * 返回结果内容可参见“sample/ajax-illust-80391469-pages接口返回结果样例.txt”
+     * @param respJSONStr 上面接口返回的JSON格式的字符串
+     * @return
+     */
+    public static List<PixivAjaxIllustPagesUrlInfoBO> getUrlsInfoFromAjaxIllustPageResult(String respJSONStr) {
+        List<PixivAjaxIllustPagesUrlInfoBO> result = new ArrayList<>(8);
+        if (StringUtils.isEmpty(respJSONStr)) {
+            return result;
+        }
+        JSONObject respJSON = JSON.parseObject(respJSONStr);
+        JSONArray body = respJSON.getJSONArray("body");
+
+        if (body == null) {
+            return result;
+        }
+        for (int i = 0; i < body.size(); ++i) {
+            JSONObject element = body.getJSONObject(i);
+            JSONObject urls = element.getJSONObject("urls");
+            String thumbMini = urls.getString("thumb_mini");
+            String small = urls.getString("small");
+            String regular = urls.getString("regular");
+            String original = urls.getString("original");
+            Integer width = element.getInteger("width");
+            Integer height = element.getInteger("height");
+
+            PixivAjaxIllustPagesUrlInfoBO pixivAjaxIllustPagesUrlInfoBO = new PixivAjaxIllustPagesUrlInfoBO();
+            pixivAjaxIllustPagesUrlInfoBO.setThumbMini(thumbMini);
+            pixivAjaxIllustPagesUrlInfoBO.setSmall(small);
+            pixivAjaxIllustPagesUrlInfoBO.setRegular(regular);
+            pixivAjaxIllustPagesUrlInfoBO.setOriginal(original);
+            pixivAjaxIllustPagesUrlInfoBO.setWidth(width);
+            pixivAjaxIllustPagesUrlInfoBO.setHeight(height);
+
+            result.add(pixivAjaxIllustPagesUrlInfoBO);
+        }
+        return result;
     }
 
     /**

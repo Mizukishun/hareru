@@ -25,9 +25,10 @@ public class PixivResultParserTest {
 
     @Test
     public void testParseArtworksResult() {
-        String pixivId = "77944010";
+        String pixivId = "80718122";
         String respHtml = PixivRequestUtils.getRespHtmlFromArtworksInterface(pixivId).orElse("");
         String content = PixivResultParser.getArtworksResultContent(respHtml);
+        //log.info("pixivId={}获取到的返回结果为:\n{}", pixivId, content);
         PixivArtworksInterfaceResultContentBO result = PixivResultParser.parseArtworksResult(content);
         log.info("从artworks接口解析出来的结果具体信息为：\n{}", JSON.toJSONString(result));
     }

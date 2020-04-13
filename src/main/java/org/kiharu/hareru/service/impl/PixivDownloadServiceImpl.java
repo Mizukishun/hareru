@@ -8,6 +8,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.kiharu.hareru.bo.PixivAjaxIllustPagesUrlInfoBO;
 import org.kiharu.hareru.bo.PixivArtworksInterfaceResultContentBO;
 import org.kiharu.hareru.bo.PixivPictureDetailInfoBO;
 import org.kiharu.hareru.constant.PixivConstants;
@@ -19,6 +20,7 @@ import org.kiharu.hareru.pixiv.PixivResultParser;
 import org.kiharu.hareru.service.PixivDownloadService;
 import org.kiharu.hareru.util.PixivHeadersUtils;
 import org.kiharu.hareru.util.PixivUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -244,14 +246,13 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onResponse(Call call, Response response) {
+                // 下面这里new FileOutputStream(file)默认是按覆盖的方式进行写入的，也即如果之前已经有了同名文件，则会被新下载的覆盖掉之前的
                 try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));){
                     log.info("进入异步onResponse，url={}", url);
                     byte[] bytes = response.body().bytes();
-                    // 下面这里new FileOutputStream(file)默认是按覆盖的方式进行写入的，也即如果之前已经有了同名文件，则会被新下载的覆盖掉之前的
-
                     bufferedOutputStream.write(bytes);
 
-                    // 这里主动进行关闭
+                    // 这里主动进行关闭释放资源
                     bufferedOutputStream.flush();
                     bufferedOutputStream.close();
                     bytes = null;
@@ -301,6 +302,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
             File file = PixivUtils.getLocalSavedPicFile(url, subject, pixivUserId);
             urlFileMap.put(url, file);
         } else {
+            // 如果pixivId对应多张图片，则还需要另外请求接口查询额外的多张图片的原始地址
             List<String> urls = PixivPictureUtils.getUrlsFromAjaxIllustPagesByPixivId(pixivId);
             for (String url : urls) {
                 File file = PixivUtils.getLocalSavedPicFile(url, subject, pixivUserId);
@@ -325,7 +327,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
         List<String> pixivIdList = PixivPictureUtils.getPixivIdsFromAjaxIllustRecommend(pixivId);
         StringBuilder subject = new StringBuilder(PixivConstants.SUBJECT_PREFIX_RECOMMEND).append(pixivId);
 
-        for (String recommendPixivId : pixivIdList) {
+        /*for (String recommendPixivId : pixivIdList) {
             try {
                 downloadPicturesByPixivId(recommendPixivId, subject.toString());
             } catch (Exception ex) {
@@ -337,8 +339,144 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
                 log.error(errorMsg.toString(), ex);
                 continue;
             }
-        }
+        }*/
+        saveAndDownloadPictures(subject.toString(), pixivIdList);
     }
+
+    /**
+     * 保存并下载图片
+     * @param subject
+     * @param pixivIdList
+     */
+    @Override
+    public void saveAndDownloadPictures(String subject, List<String> pixivIdList) {
+
+        List<PixivPictureInfo> allPictureInfoList = new ArrayList<>(16);
+        List<String> errorPixivIdList = new ArrayList<>(16);
+
+        for (String pixivId : pixivIdList) {
+            try {
+                List<PixivPictureInfo> pixivIdPicturesInfo = downloadPixivIdPictures(pixivId, subject);
+
+                if (CollectionUtils.isEmpty(pixivIdPicturesInfo)) {
+                    errorPixivIdList.add(pixivId);
+                }
+                allPictureInfoList.addAll(pixivIdPicturesInfo);
+            } catch (Exception ex) {
+                // 在下载一个pixivId对应的图片时出错，则暂时跳过，同时进行记录保存
+                StringBuilder errorMsg = new StringBuilder()
+                        .append("下载pixivId=").append(pixivId)
+                        .append("对应的图片时发生错误");
+                log.error(errorMsg.toString(), ex);
+                errorPixivIdList.add(pixivId);
+            }
+        }
+
+        // 设置是否下载成功的标志
+        allPictureInfoList.forEach(item -> {
+            if (errorPixivIdList.contains(item.getPixivId())) {
+                item.setDownloadSuccess(0);
+            } else {
+                item.setDownloadSuccess(1);
+            }
+        });
+
+        // 保存到数据库
+        pixivPictureInfoMapper.batchInsert(allPictureInfoList);
+
+    }
+
+    /**
+     * 下载pixivId指定的所有图片
+     * TODO--暂时只下载插图，不下载漫画和动图这些，以后如果需要下载所有的，则可以选择注释掉方法里的TODO部分内容
+     * @param pixivId
+     * @param subject
+     * @return 返回包含所有图片详细信息的结果
+     */
+    @Override
+    public List<PixivPictureInfo> downloadPixivIdPictures(String pixivId, String subject) {
+        List<PixivPictureInfo> result = new ArrayList<>();
+        String respHtml = PixivRequestUtils.getRespHtmlFromArtworksInterface(pixivId).orElse("");
+        String content = PixivResultParser.getArtworksResultContent(respHtml);
+        PixivArtworksInterfaceResultContentBO resultContentBO = PixivResultParser.parseArtworksResult(content);
+        if (resultContentBO == null || resultContentBO.getPictureDetailInfoBO() == null) {
+            return result;
+        }
+        PixivPictureDetailInfoBO detailInfoBO = resultContentBO.getPictureDetailInfoBO();
+        String pixivUserId = detailInfoBO.getUserId();
+        Integer pageCount = detailInfoBO.getPageCount();
+        Integer illustType = detailInfoBO.getIllustType();
+
+        // TODO--这个以后看是否下载漫画及动图等所有类型的图片，现在暂时只下载插图
+        // 如果不是插图，则跳过
+        if (!illustType.equals(0)) {
+            return result;
+        }
+
+
+        PixivPictureInfo pixivPictureInfo = PixivPictureUtils.convertDetailInfoBO2Entity(detailInfoBO);
+
+        Map<String, File> urlFileMap = new HashMap<>(8);
+
+        if (pageCount.equals(1)) {
+            // 如果pixivId只对应一张图片，则不需要再另外请求接口取查询额外的多张图片原始地址
+            String url = detailInfoBO.getOriginalUrl();
+            File file = PixivUtils.getLocalSavedPicFile(url, subject, pixivUserId);
+            urlFileMap.put(url, file);
+
+            result.add(pixivPictureInfo);
+        } else {
+            // 如果pixivId对应多张图片，则还需要另外请求接口查询额外的多张图片的原始地址--TODO，这个接口其实可以获取到更多的地址信息
+            //List<String> urls = PixivPictureUtils.getUrlsFromAjaxIllustPagesByPixivId(pixivId);
+            List<PixivAjaxIllustPagesUrlInfoBO> pixivAjaxIllustPagesUrlInfoBOList = PixivPictureUtils.getUrlsInfoFromAjaxIllustPagesByPixivId(pixivId);
+            for (PixivAjaxIllustPagesUrlInfoBO urlInfoBO : pixivAjaxIllustPagesUrlInfoBOList) {
+                String url = urlInfoBO.getOriginal();
+                File file = PixivUtils.getLocalSavedPicFile(url, subject, pixivUserId);
+                urlFileMap.put(url, file);
+
+                PixivPictureInfo tempPixivPictureInfo = new PixivPictureInfo();
+                BeanUtils.copyProperties(pixivPictureInfo, tempPixivPictureInfo);
+                tempPixivPictureInfo.setOriginalUrl(url);
+                tempPixivPictureInfo.setThumbUrl(urlInfoBO.getThumbMini());
+                tempPixivPictureInfo.setSmallUrl(urlInfoBO.getSmall());
+                tempPixivPictureInfo.setRegularUrl(urlInfoBO.getRegular());
+                tempPixivPictureInfo.setWidth(urlInfoBO.getWidth());
+                tempPixivPictureInfo.setHeight(urlInfoBO.getHeight());
+                result.add(tempPixivPictureInfo);
+            }
+        }
+
+        for (Map.Entry<String, File> entry : urlFileMap.entrySet()) {
+            String url = entry.getKey();
+            File file = entry.getValue();
+            asyncDownloadPixivPicture(url, file);
+        }
+        return result;
+    }
+
+    /*public  List<PixivPictureInfo> getPixivPictureInfoListFromDetailInfoBO(PixivPictureDetailInfoBO detailInfoBO) {
+        List<PixivPictureInfo> result = new ArrayList<>();
+        PixivPictureInfo pixivPictureInfo = PixivPictureUtils.convertDetailInfoBO2Entity(detailInfoBO);
+        result.add(pixivPictureInfo);
+
+        Integer pageCount = detailInfoBO.getPageCount();
+        if (pageCount.equals(1)) {
+            return result;
+        }
+        for (int i = 1; i < pageCount; ++i) {
+            PixivPictureInfo tempPixivPictureInfo = new PixivPictureInfo();
+            BeanUtils.copyProperties(pixivPictureInfo, tempPixivPictureInfo);
+
+            // 替换原始图片地址，但不确定是否都是这样的--TODO--还需进一步确认
+            String originalUrl = pixivPictureInfo.getOriginalUrl();
+            String pi = "_p" + i;
+            String tempOriginalUrl = originalUrl.replace("_p0", pi);
+
+            tempPixivPictureInfo.setOriginalUrl(tempOriginalUrl);
+            result.add(tempPixivPictureInfo);
+        }
+        return result;
+    }*/
 
     /**
      * 下载所有这些多个pixivId所关联推荐的图片

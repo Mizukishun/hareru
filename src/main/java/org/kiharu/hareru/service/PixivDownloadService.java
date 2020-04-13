@@ -1,5 +1,7 @@
 package org.kiharu.hareru.service;
 
+import org.kiharu.hareru.entity.PixivPictureInfo;
+
 import java.io.File;
 import java.util.List;
 
@@ -52,6 +54,21 @@ public interface PixivDownloadService {
      * @param pixivId
      */
     void downloadPicturesByPixivId(String pixivId, String subject);
+
+    /**
+     * 下载pixivId指定的所有图片
+     * @param pixivId
+     * @param subject
+     * @return 返回包含所有图片详细信息的结果
+     */
+    List<PixivPictureInfo> downloadPixivIdPictures(String pixivId, String subject);
+
+    /**
+     * 保存并下载图片
+     * @param subject
+     * @param pixivIdList
+     */
+    void saveAndDownloadPictures(String subject, List<String> pixivIdList);
 
     /**
      * 下载所有根据pixivId而推荐的图片（一层）

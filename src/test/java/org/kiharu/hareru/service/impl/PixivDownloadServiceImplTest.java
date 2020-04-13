@@ -1,16 +1,16 @@
 package org.kiharu.hareru.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.kiharu.hareru.service.PixivDownloadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @SpringBootTest
@@ -159,6 +159,17 @@ public class PixivDownloadServiceImplTest {
     }
 
     @Test
+    public void testSaveAndDownloadPictures() {
+        String subject = "UnitTest";
+        List<String> pixivIdList = new ArrayList<>(16);
+        pixivIdList.add("64842253");
+        pixivIdList.add("80088233");
+        pixivIdList.add("71244426");
+        pixivIdList.add("55486351");
+        pixivDownloadService.saveAndDownloadPictures(subject, pixivIdList);
+    }
+
+    @Test
     public void testSavePicInfoTest() {
         String pixivId = "71006593";
         pixivDownloadService.savePicInfoTest(pixivId);
@@ -167,7 +178,8 @@ public class PixivDownloadServiceImplTest {
     /**
      * 对于异步下载的单元测试，需要下面的无限循环保证能继续进行下去
      */
-    private void whileTrue() {
+    @AfterEach
+    public void whileTrue() {
         // 用下面这个死循环来让这个单元测试能够进行！
         while(true){
             try {
