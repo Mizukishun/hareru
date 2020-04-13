@@ -28,6 +28,7 @@ import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 用于下载Pixiv图片的类
@@ -424,6 +425,10 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
             File file = PixivUtils.getLocalSavedPicFile(url, subject, pixivUserId);
             urlFileMap.put(url, file);
 
+            String localFileSavePath = file.getAbsolutePath();
+            pixivPictureInfo.setLocalPicPath(localFileSavePath);
+            pixivPictureInfo.setLocalPicName(localFileSavePath.substring(localFileSavePath.lastIndexOf(File.separator) + 1));
+
             result.add(pixivPictureInfo);
         } else {
             // 如果pixivId对应多张图片，则还需要另外请求接口查询额外的多张图片的原始地址--TODO，这个接口其实可以获取到更多的地址信息
@@ -499,12 +504,12 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
 
 
         // 下载时发生错误的图片pixivId
-        Set<String> errorPixivIdSet = new HashSet<>();
+        //Set<String> errorPixivIdSet = new HashSet<>();
         // 保存所有图片的文件夹名称
         StringBuilder subject = new StringBuilder(PixivConstants.SUBJECT_PREFIX_RECOMMEND_MULTI).append(pixivIdList.get(0));
 
         // 循环下载所有图片
-        for (String pixivId : recommendPixivIdSet) {
+        /*for (String pixivId : recommendPixivIdSet) {
             try {
 
                 downloadPicturesByPixivId(pixivId, subject.toString());
@@ -518,9 +523,11 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
                 errorPixivIdSet.add(pixivId);
                 continue;
             }
-        }
+        }*/
+        saveAndDownloadPictures(subject.toString(), recommendPixivIdSet.stream().collect(Collectors.toList()));
 
-        log.info("根据pixivIdList下载所关联推荐的所有图片的总数为：{},下载失败的图片数为：{}", recommendPixivIdSet.size(), errorPixivIdSet.size());
+        //log.info("根据pixivIdList下载所关联推荐的所有图片的总数为：{},下载失败的图片数为：{}", recommendPixivIdSet.size(), errorPixivIdSet.size());
+        log.info("根据pixivIdList下载所关联推荐的所有图片的总数为：{}", recommendPixivIdSet.size());
 
         // TODO--针对上面出错的再次尝试处理吗？
 
@@ -557,7 +564,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
         StringBuilder subject = new StringBuilder(PixivConstants.SUBJECT_PREFIX_RECOMMEND_TWO_DEPTH).append(pixivId);
 
         // 下载错误的图片pixivId
-        Set<String> errorPixivSet = new HashSet<>(16);
+        /*Set<String> errorPixivSet = new HashSet<>(16);
         // 下载所有关联推荐的图片
         for (String pid : allRecommendPixivIdSet) {
             try {
@@ -567,9 +574,11 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
                 errorPixivSet.add(pid);
                 continue;
             }
-        }
+        }*/
+        saveAndDownloadPictures(subject.toString(), allRecommendPixivIdSet.stream().collect(Collectors.toList()));
+        log.info("下载关联推荐图片(两层)的图片总数为：{}", allRecommendPixivIdSet.size());
 
-        log.info("下载关联推荐图片(两层)的图片总数为：{}，其中下载错误的数量有：{}", allRecommendPixivIdSet.size(), errorPixivSet.size());
+        //log.info("下载关联推荐图片(两层)的图片总数为：{}，其中下载错误的数量有：{}", allRecommendPixivIdSet.size(), errorPixivSet.size());
     }
 
     /**
@@ -590,7 +599,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
         // 图片保存的文件夹名称
         StringBuilder subject = new StringBuilder(PixivConstants.SUBJECT_PREFIX_RECOMMEND_AUTHOR).append(pixivId);
 
-        for (String tempPixivId : pixivIds) {
+        /*for (String tempPixivId : pixivIds) {
             try {
                 downloadPicturesByPixivId(tempPixivId, subject.toString());
             } catch (Exception ex) {
@@ -600,6 +609,8 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
             }
         }
         log.info("请求下载的图片数量为：{}\n下载出错的图片数量为：{}\n下载成功的图片数量：{}",pixivIds.size(), errorPixivIds.size(), pixivIds.size() - errorPixivIds.size());
+        */
+        saveAndDownloadPictures(subject.toString(), pixivIds.stream().collect(Collectors.toList()));
     }
 
     /**
@@ -611,7 +622,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
     public void downloadAuthorIllustAndManga(String pixivUserId) {
         Set<String> authorWorksId = PixivPictureUtils.getAuthorIllustAndMangaId(pixivUserId);
         StringBuilder subject = new StringBuilder(PixivConstants.SUBJECT_PREFIX_AUTHOR).append(pixivUserId);
-        for (String pixivId : authorWorksId) {
+        /*for (String pixivId : authorWorksId) {
             try {
                 downloadPicturesByPixivId(pixivId, subject.toString());
             } catch (Exception ex) {
@@ -620,7 +631,8 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
                         .append("出错");
                 log.error(errorMsg.toString(), ex);
             }
-        }
+        }*/
+        saveAndDownloadPictures(subject.toString(), authorWorksId.stream().collect(Collectors.toList()));
     }
 
     /**
@@ -633,7 +645,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
 
         StringBuilder subject = new StringBuilder(PixivConstants.SUBJECT_PREFIX_DAILY_R18).append(date);
 
-        Set<String> errorPixivIdSet = new HashSet<>(16);
+        /*Set<String> errorPixivIdSet = new HashSet<>(16);
         for (String pixivId : pixivIdSet) {
             try {
                 downloadPicturesByPixivId(pixivId, subject.toString());
@@ -643,7 +655,8 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
             }
         }
 
-        log.info("下载{}的综合R18每日排行榜图片总数量为{}，其中失败的数量为{}", date, pixivIdSet.size(), errorPixivIdSet.size());
+        log.info("下载{}的综合R18每日排行榜图片总数量为{}，其中失败的数量为{}", date, pixivIdSet.size(), errorPixivIdSet.size());*/
+        saveAndDownloadPictures(subject.toString(), pixivIdSet.stream().collect(Collectors.toList()));
     }
 
     /**
@@ -683,7 +696,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
             pixivIdSet.addAll(datePixivIdSet);
         }
 
-        Set<String> errorPixivIdSet = new HashSet<>(16);
+        /*Set<String> errorPixivIdSet = new HashSet<>(16);
         for (String pixivId : pixivIdSet) {
             try {
                 downloadPicturesByPixivId(pixivId, subject.toString());
@@ -693,7 +706,9 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
             }
         }
 
-        log.info("下载{}往前的{}天的综合R18每日排行榜图片总数量为{}，其中失败的数量为{}", endDate, dayNums, pixivIdSet.size(), errorPixivIdSet.size());
+        log.info("下载{}往前的{}天的综合R18每日排行榜图片总数量为{}，其中失败的数量为{}", endDate, dayNums, pixivIdSet.size(), errorPixivIdSet.size());*/
+        saveAndDownloadPictures(subject.toString(), pixivIdSet.stream().collect(Collectors.toList()));
+        log.info("下载{}往前的{}天的综合R18每日排行榜图片总数量为{}", endDate, dayNums, pixivIdSet.size());
     }
 
     /**

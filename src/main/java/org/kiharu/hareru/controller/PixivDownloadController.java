@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -93,7 +94,7 @@ public class PixivDownloadController {
         Set<String> pixivIds = PixivPictureUtils.getPixivIdsFromRecommendPicAuthorsWorksByPixivId(pixivId);
         // 保存图片的文件夹名称
         StringBuilder subject = new StringBuilder(PixivConstants.SUBJECT_PREFIX_RECOMMEND_AUTHOR).append(pixivId);
-        log.info("根据pixivId={}获取到的关联推荐图片的所有作者的所有图片数量为：{}", pixivId, pixivIds.size());
+        /*log.info("根据pixivId={}获取到的关联推荐图片的所有作者的所有图片数量为：{}", pixivId, pixivIds.size());
         for (String downloadPixivId : pixivIds) {
             try {
                 pixivDownloadServiceImpl.downloadPicturesByPixivId(downloadPixivId, subject.toString());
@@ -103,7 +104,8 @@ public class PixivDownloadController {
                         .append("出错");
                 log.error(errorMsg.toString(), ex);
             }
-        }
+        }*/
+        pixivDownloadServiceImpl.saveAndDownloadPictures(subject.toString(), pixivIds.stream().collect(Collectors.toList()));
 
         return "SUCCESS";
     }
