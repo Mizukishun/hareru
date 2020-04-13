@@ -442,6 +442,11 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
                 tempPixivPictureInfo.setRegularUrl(urlInfoBO.getRegular());
                 tempPixivPictureInfo.setWidth(urlInfoBO.getWidth());
                 tempPixivPictureInfo.setHeight(urlInfoBO.getHeight());
+
+                String localFileSavePath = file.getAbsolutePath();
+                tempPixivPictureInfo.setLocalPicPath(localFileSavePath);
+                tempPixivPictureInfo.setLocalPicName(localFileSavePath.substring(localFileSavePath.lastIndexOf(File.separator) + 1));
+
                 result.add(tempPixivPictureInfo);
             }
         }

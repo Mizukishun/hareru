@@ -164,7 +164,7 @@ public class PixivDownloadServiceImplTest {
         List<String> pixivIdList = new ArrayList<>(16);
         pixivIdList.add("64842253");
         pixivIdList.add("80088233");
-        pixivIdList.add("71244426");
+        pixivIdList.add("60103079");
         pixivIdList.add("55486351");
         pixivDownloadService.saveAndDownloadPictures(subject, pixivIdList);
     }
