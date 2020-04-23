@@ -86,4 +86,18 @@ public class PixivConstants {
     public static String SUBJECT_PREFIX_DAILY_R18 = "D18R";
     public static String SUBJECT_PREFIX_DAILY_R18_MULTI = "D18RM";
 
+
+    /**
+     * 一次插入最大的记录条数--TODO--这里其实不应该是用记录条数来的，而应该是插入数据的字节大小来决定的，
+     * 不过这个值并没有经过测试，只能说是自己想着来的--TODO--之后看弄个基准测试
+     */
+    public static final Integer MAX_INSERT_RECORD_COUNT = 10000;
+
+    /**
+     * 一个文件夹中最大存储图片文件的数量
+     * 如果一个文件夹中的图片文件数量太大，会导致在windows资源管理器打开该文件夹的时候占用太多内存，而且打开太慢
+     * 这里的数字也只是一个自己想着来的，没有经过测试--TODO--之后看是不是做下测试，看多少合适
+     */
+    public static final Integer MAX_DIR_FILE_COUNT = 2;
+
 }

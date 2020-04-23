@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -129,8 +130,8 @@ public class PixivUtils {
 
         // 将路径中的反斜杠\替换成正斜杠/
         StringBuilder filePathSB = new StringBuilder()
-                .append(maxUsableSpaceDisk.getPath().replace("\\", "/"))
-                .append(PixivConstants.PICTURE_SAVE_TOP_FOLDER_NAME).append("/");
+                .append(maxUsableSpaceDisk.getPath())
+                .append(PixivConstants.PICTURE_SAVE_TOP_FOLDER_NAME).append(File.separator);
 
         // 创建保存Pixiv图片的最顶层文件夹
         File topFolder = new File(filePathSB.toString());
@@ -145,7 +146,7 @@ public class PixivUtils {
 
         if (Arrays.stream(topFolder.listFiles()).noneMatch(innerFile -> innerFile.getName().equals(currentDate))) {
             // 如果顶层文件夹中没有跟当前日期同名的文件夹，则创建一个以当前日期为名的文件夹
-            filePathSB.append(currentDate).append("/");
+            filePathSB.append(currentDate).append(File.separator);
         } else {
             // 如果就是已存在当前日期名称的文件夹，则新建一个文件夹
 
@@ -161,7 +162,7 @@ public class PixivUtils {
             // 跟当前日期同名类似的最大的文件夹名称，要么在后面拼装个1，要么对其文件夹名称加1
             if (maxFileName.length() == 8) {
                 // 如果就是已存在当前日期名称的文件夹，则新建的文件夹名称是在当前日期的后面添加个1
-                filePathSB.append(currentDate).append("1").append("/");
+                filePathSB.append(currentDate).append("1").append(File.separator);
             } else {
                 // 如果已存在的多个跟当前日期类似名称的文件夹，取到最大的那个，在它的基础上以算数加1的方式进行新文件夹的命名
                 Integer maxFileNameInteger = Integer.valueOf(maxFileName);
@@ -193,16 +194,73 @@ public class PixivUtils {
         File file = PixivConstants.SAVED_PICTURE_TOP_FOLDER;
         StringBuilder filePath = new StringBuilder()
                 .append(file.getAbsolutePath())
-                .append("/")
+                .append(File.separator)
                 .append(subject)
-                .append("/");
+                .append(File.separator);
 
         File subjectFile = new File(filePath.toString());
         if (!subjectFile.exists()) {
             subjectFile.mkdir();
         }
+
+        // 限制每个文件夹内的最大文件数量
+        /*Integer fileCount = subjectFile.listFiles().length;
+        if (PixivConstants.MAX_DIR_FILE_COUNT.compareTo(fileCount) <= 0) {
+            File parentDir = subjectFile.getParentFile();
+            final String tempSubject = subject;
+            List<String> existedDirName = Arrays.stream(parentDir.listFiles())
+                    .map(dir -> dir.getName())
+                    // 只查询出目录名中包含该subject的所有目录名
+                    .filter(dirName -> dirName.contains(tempSubject))
+                    .collect(Collectors.toList());
+            Integer sameNameCount = existedDirName.size();
+            filePath = new StringBuilder()
+                    .append(file.getAbsolutePath())
+                    .append(File.separator)
+                    .append(subject)
+                    .append("_")
+                    .append(sameNameCount)
+                    .append(File.separator);
+            subjectFile = new File(filePath.toString());
+            if (!subjectFile.exists()) {
+                subjectFile.mkdir();
+            }
+        }*/
+
+        /*File[] existedDirs = file.listFiles();
+        final String finalSubject = subject;
+        List<File> sameSubjectDirs = Arrays.stream(existedDirs)
+                .filter(item -> item.getName().contains(finalSubject))
+                .collect(Collectors.toList());
+        StringBuilder filePath;
+        File subjectFile;
+        if (sameSubjectDirs.isEmpty()) {
+            // 如果之前没有创建过同该subject名称的文件夹，则新建一个以subject为名的文件夹
+            filePath = new StringBuilder()
+                    .append(file.getAbsolutePath())
+                    .append(File.separator)
+                    .append(subject)
+                    .append(File.separator);
+            subjectFile = new File(filePath.toString());
+            subjectFile.mkdir();
+        } else {
+            // 如果已有与subject同名（包含）的文件夹-TODO
+            subjectFile = getLastedFile(subject, sameSubjectDirs);
+        }*/
+
         return subjectFile;
     }
+
+    /**
+     * 获取与subject同名的最新的文件夹，且要求改文件夹中的文件数量不能超过PixivConstants.MAX_DIR_FILE_COUNT
+     * @param subject
+     * @param fileList
+     * @return
+     */
+    public static File getLastedFile(String subject, List<File> fileList) {
+        return null;
+    }
+
 
     /**
      * 获取保存图片的文件，包含完整的路径名及文件
@@ -221,7 +279,7 @@ public class PixivUtils {
 
         StringBuilder picFilePath = new StringBuilder()
                 .append(savedPicFolder.getAbsolutePath())
-                .append("/")
+                .append(File.separator)
                 .append(urlInfoBO.getPixivId())
                 .append(urlInfoBO.getSuffix());
 
@@ -232,7 +290,7 @@ public class PixivUtils {
             // 如果之前已有同名图片，则新建一个以{pixivId_timestamp}为名的图片
             StringBuilder newPicFilePath = new StringBuilder()
                     .append(savedPicFolder.getAbsolutePath())
-                    .append("/").append(urlInfoBO.getPixivId())
+                    .append(File.separator).append(urlInfoBO.getPixivId())
                     .append("_").append(System.currentTimeMillis())
                     .append(urlInfoBO.getSuffix());
             savedPicFile = new File(newPicFilePath.toString());
@@ -266,7 +324,7 @@ public class PixivUtils {
 
         StringBuilder picFilePath = new StringBuilder()
                 .append(picDir.getAbsolutePath())
-                .append("/")
+                .append(File.separator)
                 .append("U")
                 .append(pixivUserId)
                 .append("_P")
@@ -277,7 +335,7 @@ public class PixivUtils {
             // 如果之前已有同名图片，则新建一个以{pixivId_timestamp}为名的图片
             StringBuilder newPicFilePath = new StringBuilder()
                     .append(picDir.getAbsolutePath())
-                    .append("/")
+                    .append(File.separator)
                     .append("U")
                     .append(pixivUserId)
                     .append("_P")

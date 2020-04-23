@@ -4,9 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.kiharu.hareru.constant.PixivConstants;
 import org.kiharu.hareru.service.impl.PixivDownloadServiceImpl;
 import org.kiharu.hareru.pixiv.PixivPictureUtils;
+import org.kiharu.hareru.util.PixivUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -151,7 +153,10 @@ public class PixivDownloadController {
     @GetMapping("/test")
     public String test() {
         log.info("测试Controller接口");
-        pixivDownloadServiceImpl.savePicInfoTest("71006593");
+        //pixivDownloadServiceImpl.savePicInfoTest("71006593");
+        String subject = "p2233";
+        File file = PixivUtils.getSavedPicFolderBySubject(subject);
+        log.info("创建的文件夹路径为：{}", file.getAbsolutePath());
         return "SUCCESS";
     }
 }
