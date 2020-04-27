@@ -280,9 +280,9 @@ public class PixivResultParser {
         result.addAll(nextIdList);
 
         StringBuilder resultInfo = new StringBuilder()
-                .append("关联图片推荐接口返回的图片pixivIds总共有:").append(result.size()).append("个\n")
-                .append("其中nextIds有：").append(nextIds.size()).append("个\n")
-                .append("其中illustIds有：").append(illustsIdList.size()).append("个\n")
+                .append("关联图片推荐接口返回的图片pixivIds总共有:").append(result.size()).append("个；")
+                .append("其中nextIds有：").append(nextIds.size()).append("个；")
+                .append("其中illustIds有：").append(illustsIdList.size()).append("个；")
                 .append("所有的pixivIds如下：\n")
                 .append(JSONObject.toJSONString(result));
 
