@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <!-- 上下文名称，用于区分不同应用程序的日志记录 -->
+    <contextName>pixiv-hareru</contextName>
+    <!-- 设置变量，以便在后续可以通过${}进行引用 -->
+    <property name="log.path" value="log" />
+
+    <!-- 输出到控制台 -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 过滤器，这里使用级别过滤器，根据日志级别进行过滤 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- 配置的过滤级别 -->
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <encoder>
+            <!-- 对日志进行格式化 -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %contextName [%thread] %-5level %logger{50} = %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 输出到文件 -->
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/pixiv-hareru-logging-error.log</file>
+        <!-- 日志文件只保存级别为ERROR的日志 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/pixiv-hareru-logging.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- 日志保存周期 -->
+            <maxHistory>30</maxHistory>
+            <!-- 日志文件的上限大小，超过则会删除旧日志 -->
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %contextName [%thread] %-5level %logger{50} = %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- root日志节点是必选节点，用于指定最基础的日志输出级别 -->
+    <root level="info">
+        <appender-ref ref="console" />
+        <appender-ref ref="file" />
+    </root>
+
+    <!-- logger日志节点，用于指定某一个包或者某一个类的日志打印级别，以及对应的appender -->
+    <!--<logger name="org.kiharu" level="error" addtivity="false">
+        <appender-ref ref="file" />
+    </logger>-->
+</configuration>
