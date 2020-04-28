@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.kiharu.hareru.mapper.PixivAllPictureMapper">
+    <resultMap id="ColumnResultMap" type="org.kiharu.hareru.entity.PixivAllPicture">
+        <result column="id" jdbcType="BIGINT" property="id" />
+        <result column="pixiv_id" jdbcType="VARCHAR" property="pixivId" />
+        <result column="author_id" jdbcType="VARCHAR" property="authorId" />
+        <result column="original_url" jdbcType="VARCHAR" property="originalUrl" />
+        <result column="upload_date" jdbcType="VARCHAR" property="uploadDate" />
+        <result column="upload_time" jdbcType="VARCHAR" property="uploadTime" />
+        <result column="pic_suffix" jdbcType="VARCHAR" property="picSuffix" />
+        <result column="r18_restrict" jdbcType="INTEGER" property="r18Restrict" />
+        <result column="existed" jdbcType="INTEGER" property="existed" />
+        <result column="downloaded" jdbcType="INTEGER" property="downloaded" />
+        <result column="add_time" jdbcType="TIMESTAMP" property="addTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    </resultMap>
+
+    <sql id="allColumns">
+        id, pixiv_id, author_id, original_url, upload_date, upload_time, pic_suffix, r18_restrict,
+        existed, downloaded, add_time, update_time
+    </sql>
+
+    <!-- 批量插入P站图片信息 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO pixiv_all_picture(pixiv_id, author_id, original_url, upload_date,
+        upload_time, pic_suffix, r18_restrict,existed, downloaded)
+        VALUES<foreach collection="list" item="item" separator=",">
+        (
+            #{item.pixivId, jdbcType=VARCHAR},
+            #{item.authorId, jdbcType=VARCHAR},
+            #{item.originalUrl, jdbcType=VARCHAR},
+            #{item.uploadDate, jdbcType=VARCHAR},
+            #{item.uploadTime, jdbcType=VARCHAR},
+            #{item.picSuffix, jdbcType=VARCHAR},
+            #{item.r18Restrict, jdbcType=INTEGER},
+            #{item.existed, jdbcType=INTEGER},
+            #{item.downloaded, jdbcType=INTEGER}
+        )
+    </foreach>
+    </insert>
+
+    <!-- 查询原始图片地址 -->
+    <select id="select" resultType="java.lang.String" parameterType="java.util.List">
+        SELECT original_url
+        FROM pixiv_all_picture
+        WHERE pixiv_id IN
+            <foreach collection="pixivIdList" open="(" separator="," close=")" item="pixivId">
+                #{pixivId, jdbcType=VARCHAR}
+            </foreach>
+    </select>
+</mapper>

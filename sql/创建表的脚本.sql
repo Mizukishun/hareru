@@ -40,4 +40,29 @@ CREATE TABLE `pixiv_db`.`pixiv_picture_info` (
     PRIMARY KEY (id),
     INDEX pid (pixiv_id),
     INDEX aid (author_id)
-) ENGINE=INNODB DEFAULT CHARACTER SET = 'utf8mb4';
+) ENGINE=INNODB DEFAULT CHARACTER SET = 'utf8mb4' COMMENT = 'P站图片信息';
+
+
+-- Pixiv的所有图片
+DROP TABLE IF EXISTS `pixiv_db`.`pixiv_all_picture`;
+CREATE TABLE `pixiv_db`.`pixiv_all_picture` (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键，自增ID',
+    pixiv_id VARCHAR(256) DEFAULT NULL COMMENT 'P站图片ID',
+    author_id VARCHAR(256) DEFAULT NULL COMMENT '图片作者ID',
+    original_url VARCHAR(1024) DEFAULT NULL COMMENT '原始图片地址',
+    upload_date VARCHAR(8) DEFAULT NULL COMMENT '图片上传到P站的日期，yyyyMMdd格式',
+    upload_time VARCHAR(8) DEFAULT NULL COMMENT '图片上传到P站的时间，HHmmss格式',
+    pic_suffix VARCHAR(10) DEFAULT NULL COMMENT '图片后缀，也即图片类型',
+    r18_restrict TINYINT(1) DEFAULT NULL COMMENT '是否R18, 0-否，1-是',
+    existed TINYINT(1) DEFAULT 1 COMMENT '图片在pixiv是否存在，0-不存在，无法找到，1-存在',
+    downloaded TINYINT(1) DEFAULT 0 COMMENT '是否已下载到本地，0-未下载，1-已下载',
+    add_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '新增时间',
+    update_time TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (id),
+    INDEX pic(pixiv_id),
+    INDEX aid(author_id)
+) ENGINE=INNODB DEFAULT CHARACTER SET = 'utf8mb4' COMMENT = 'P站所有图片';
+
+
+
+
