@@ -2,6 +2,7 @@ package org.kiharu.hareru.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.kiharu.hareru.constant.PixivConstants;
+import org.kiharu.hareru.service.PixivInfoService;
 import org.kiharu.hareru.service.impl.PixivDownloadServiceImpl;
 import org.kiharu.hareru.pixiv.PixivPictureUtils;
 import org.kiharu.hareru.util.PixivUtils;
@@ -20,6 +21,8 @@ public class PixivDownloadController {
 
     @Autowired
     private PixivDownloadServiceImpl pixivDownloadServiceImpl;
+    @Autowired
+    private PixivInfoService pixivInfoService;
 
     /**
      * 根据pixivId下载该图片
@@ -131,6 +134,19 @@ public class PixivDownloadController {
     public void downloadRankingDailyR18MultiDays(@RequestParam("endDate")String endDate, @RequestParam("dayNums")Integer dayNums) {
         pixivDownloadServiceImpl.downloadRankingDailyR18MultiDays(endDate, dayNums);
         log.info("SUCCESS");
+    }
+
+    /**
+     * 根据pixivId的范围下载其对应所有图片信息到pixiv_picture_detail_info表中
+     * @param startPixivId
+     * @param endPixivId
+     * @return
+     */
+    @GetMapping("/downloadPictureInfoByRange")
+    public String downloadPictureInfoByRange(@RequestParam("startPixivId")Integer startPixivId, @RequestParam("endPixivId")Integer endPixivId) {
+        Integer totalCount = pixivInfoService.downloadPictureInfoByRange(startPixivId, endPixivId);
+        log.info("下载了范围为[{},{}]的pixivId的图片信息到数据库表pixiv_picture_detail_info中，总共插入了{}条记录", startPixivId, endPixivId, totalCount);
+        return "SUCCESS";
     }
 
 

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.kiharu.hareru.bo.PixivAjaxIllustPagesUrlInfoBO;
 import org.springframework.util.Assert;
 
 import java.util.List;
@@ -44,6 +45,13 @@ public class PixivPictureUtilsTest {
         String pixivUserId = "7038833";
         Set<String> result = PixivPictureUtils.getAuthorIllustAndMangaId(pixivUserId);
         log.info("获取到{}作者的所有插画和漫画的ID：\n{}", pixivUserId, JSON.toJSONString(result));
+    }
+
+    @Test
+    public void testGetUrlsInfoFromAjaxIllustPagesByPixivId() {
+        String pixivId = "81102991";
+        List<PixivAjaxIllustPagesUrlInfoBO> result = PixivPictureUtils.getUrlsInfoFromAjaxIllustPagesByPixivId(pixivId);
+        log.info("获取ajax/illust/page接口返回内容为\n{}", JSON.toJSONString(result));
     }
 
 

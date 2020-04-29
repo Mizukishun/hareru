@@ -106,4 +106,19 @@ public class PixivConstants {
     public static final Integer TRUE = 1;
     public static final Integer FALSE = 0;
 
+    /**
+     * 无效的pixivId
+     */
+    public static final String INVALID_PIXIV_ID = "-1";
+
+    /**
+     * 请求的超时时间，以秒为单位
+     */
+    public static final Long REQUEST_SECONDS_TIME_OUT = 60L;
+
+    /**
+     * 异步请求时同时最大的请求数量
+     */
+    public static final Integer ASYNC_MAX_REQUEST_COUNT = 50;
+
 }

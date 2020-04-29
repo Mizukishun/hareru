@@ -36,9 +36,9 @@ public class PixivInfoServiceImplTest {
 
     @Test
     public void testDownloadPixivPictureUrl() {
-        Integer startPixivId = 1;
-        Integer endPixivId = 20;
-        Integer result = pixivInfoService.downloadPixivPictureUrl(startPixivId, endPixivId);
+        Integer startPixivId = 81102991;
+        Integer endPixivId = 81102991;
+        Integer result = pixivInfoService.downloadPictureInfoByRange(startPixivId, endPixivId);
         log.info("下载pixivId为[{}, {}]返回的图片信息，其返回的结果数量为{}", startPixivId, endPixivId, result);
     }
 }

@@ -386,29 +386,23 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
         // TODO--这里一次可能会插入几万甚至十万以上的记录，对于MySQL单条SQL语句长度限制max_allowed_packet值可能会超过，导致报PacketTooBigException异常
         // 虽然可以手动修改my.ini的该值，但感觉还是需要在这里做适应处理
         Integer insertRecordCount = allPictureInfoList.size();
-        if (PixivConstants.MAX_INSERT_RECORD_COUNT.compareTo(insertRecordCount) < 0) {
-            int fromIndex = 0;
-            int endIndex = PixivConstants.MAX_INSERT_RECORD_COUNT;
-            do {
-                if (insertRecordCount.compareTo(endIndex) < 0) {
-                    endIndex = insertRecordCount;
-                }
+        int fromIndex = 0;
+        int endIndex = PixivConstants.MAX_INSERT_RECORD_COUNT;
+        do {
+            if (insertRecordCount.compareTo(endIndex) < 0) {
+                endIndex = insertRecordCount;
+            }
 
-                List<PixivPictureInfo> tempInsertList = allPictureInfoList.subList(fromIndex,endIndex);
-                pixivPictureInfoMapper.batchInsert(tempInsertList);
-                // TODO--测试用，之后删除
-                log.info("{}主题总共有{}条记录，此次插入了[{},{}]范围之间的数据", subject, insertRecordCount, fromIndex, endIndex);
+            List<PixivPictureInfo> tempInsertList = allPictureInfoList.subList(fromIndex,endIndex);
+            pixivPictureInfoMapper.batchInsert(tempInsertList);
+            // TODO--测试用，之后删除
+            log.info("{}主题总共有{}条记录，此次插入了[{},{}]范围之间的数据", subject, insertRecordCount, fromIndex, endIndex);
 
-                fromIndex += PixivConstants.MAX_INSERT_RECORD_COUNT;
-                endIndex += PixivConstants.MAX_INSERT_RECORD_COUNT;
-            } while (fromIndex < insertRecordCount);
-        }
+            fromIndex += PixivConstants.MAX_INSERT_RECORD_COUNT;
+            endIndex += PixivConstants.MAX_INSERT_RECORD_COUNT;
+        } while (fromIndex < insertRecordCount);
         // TODO--测试用，之后删除
         log.info("{}主题总共插入了{}条记录", subject, insertRecordCount);
-
-
-        //pixivPictureInfoMapper.batchInsert(allPictureInfoList);
-
     }
 
     /**

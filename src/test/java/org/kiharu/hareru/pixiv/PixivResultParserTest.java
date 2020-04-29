@@ -16,7 +16,7 @@ public class PixivResultParserTest {
 
     @Test
     public void testGetArtworksResultContentJSONStr() {
-        String pixivId = "77944010";
+        String pixivId = "81103752";
         String respHtml = PixivRequestUtils.getRespHtmlFromArtworksInterface(pixivId).orElse("");
         String content = PixivResultParser.getArtworksResultContent(respHtml);
 
@@ -25,7 +25,7 @@ public class PixivResultParserTest {
 
     @Test
     public void testParseArtworksResult() {
-        String pixivId = "75919281";
+        String pixivId = "81103752";
         String respHtml = PixivRequestUtils.getRespHtmlFromArtworksInterface(pixivId).orElse("");
         String content = PixivResultParser.getArtworksResultContent(respHtml);
         //log.info("pixivId={}获取到的返回结果为:\n{}", pixivId, content);

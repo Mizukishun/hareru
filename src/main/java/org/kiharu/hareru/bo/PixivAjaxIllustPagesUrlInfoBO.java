@@ -26,4 +26,6 @@ public class PixivAjaxIllustPagesUrlInfoBO implements Serializable {
     private Integer width;
     /** 图片高度 **/
     private Integer height;
+    /** 图片P站ID **/
+    private String pixivId;
 }

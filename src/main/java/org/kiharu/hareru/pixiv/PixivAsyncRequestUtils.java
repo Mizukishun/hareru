@@ -8,7 +8,9 @@ import org.kiharu.hareru.util.PixivHeadersUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.Time;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -29,7 +31,11 @@ public class PixivAsyncRequestUtils {
     public static void getRespHtmlFromArtworks(String pixivId, Callback callback) {
         String url = PixivConstants.PIXIV_ARTWORKS_PATH + pixivId;
         Headers headers = PixivHeadersUtils.getHeadersWithUserCookieAutoDecompress();
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder()
+                .readTimeout(PixivConstants.REQUEST_SECONDS_TIME_OUT, TimeUnit.SECONDS)
+                .writeTimeout(PixivConstants.REQUEST_SECONDS_TIME_OUT, TimeUnit.SECONDS)
+                .connectTimeout(PixivConstants.REQUEST_SECONDS_TIME_OUT, TimeUnit.SECONDS)
+                .build();
         Request request = new Request.Builder()
                 .headers(headers)
                 .url(url)
@@ -47,12 +53,16 @@ public class PixivAsyncRequestUtils {
      * @param callback
      */
     public static void getResponseFromAjaxIllustPage(String pixivId, Callback callback) {
-        StringBuffer url = new StringBuffer()
+        StringBuilder url = new StringBuilder()
                 .append(PixivConstants.PIXIV_AJAX_ILLUST_PAGES_PREFIX)
                 .append(pixivId)
                 .append(PixivConstants.PIXIV_AJAX_ILLUST_PAGES_SUFFIX);
         Headers headers = PixivHeadersUtils.getHeadersWithUserCookieAutoDecompress();
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder()
+                .readTimeout(PixivConstants.REQUEST_SECONDS_TIME_OUT, TimeUnit.SECONDS)
+                .writeTimeout(PixivConstants.REQUEST_SECONDS_TIME_OUT, TimeUnit.SECONDS)
+                .connectTimeout(PixivConstants.REQUEST_SECONDS_TIME_OUT, TimeUnit.SECONDS)
+                .build();
         Request request = new Request.Builder()
                 .headers(headers)
                 .url(url.toString())

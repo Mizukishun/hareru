@@ -240,6 +240,16 @@ public class PixivResultParser {
             pixivAjaxIllustPagesUrlInfoBO.setWidth(width);
             pixivAjaxIllustPagesUrlInfoBO.setHeight(height);
 
+            if (StringUtils.isNotBlank(original)) {
+                try {
+                    String pixivId = original.substring(original.lastIndexOf("/") + 1, original.lastIndexOf("_"));
+                    pixivAjaxIllustPagesUrlInfoBO.setPixivId(pixivId);
+                } catch (Exception ex) {
+                    // 这里把所有可能的异常进行捕获，只打印日志，不影响这个程序的正常运行
+                    log.error("解析多张图片地址信息/ajax/illust/.../pages接口返回内容中的pixivId时出错", ex);
+                }
+            }
+
             result.add(pixivAjaxIllustPagesUrlInfoBO);
         }
         return result;
