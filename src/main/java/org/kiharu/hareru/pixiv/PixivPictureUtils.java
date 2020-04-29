@@ -8,6 +8,7 @@ import org.kiharu.hareru.bo.PixivArtworksInterfaceResultContentBO;
 import org.kiharu.hareru.bo.PixivAuthorProfileBO;
 import org.kiharu.hareru.bo.PixivPictureDetailInfoBO;
 import org.kiharu.hareru.constant.PixivConstants;
+import org.kiharu.hareru.entity.PixivPictureDetailInfo;
 import org.kiharu.hareru.entity.PixivPictureInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -275,6 +276,47 @@ public class PixivPictureUtils {
         pixivPictureInfo.setDescription(description);*/
 
         return pixivPictureInfo;
+    }
+
+    /**
+     * 将PixivPictureDetailInfoBO转换为PixivPictureDetailInfo
+     * @param bo
+     * @return
+     */
+    public static PixivPictureDetailInfo convert2DetailInfo(PixivPictureDetailInfoBO bo) {
+        PixivPictureDetailInfo entity = new PixivPictureDetailInfo();
+        entity.setPixivId(bo.getId());
+        entity.setOriginalUrl(bo.getOriginalUrl());
+        entity.setAuthorId(bo.getUserId());
+        entity.setAuthorName(bo.getUserName());
+        entity.setPageCount(bo.getPageCount());
+        entity.setTitle(bo.getTitle());
+        entity.setWidth(bo.getWidth());
+        entity.setHeight(bo.getHeight());
+        entity.setIllustType(bo.getIllustType());
+        entity.setR18Restrict(bo.getXRestrict() == null ? null : Integer.valueOf(bo.getXRestrict()));
+        entity.setBookmarkCount(bo.getBookmarkCount());
+        entity.setLikeCount(bo.getLikeCount());
+        entity.setCommentCount(bo.getCommentCount());
+        entity.setViewCount(bo.getViewCount());
+        entity.setResponseCount(bo.getResponseCount());
+        entity.setCreateDate(bo.getCreateDate());
+        entity.setUploadDate(bo.getUploadDate());
+        entity.setMiniUrl(bo.getMiniUrl());
+        entity.setThumbUrl(bo.getThumbUrl());
+        entity.setSmallUrl(bo.getSmallUrl());
+        entity.setRegularUrl(bo.getRegularUrl());
+        entity.setPixivIdInt(bo.getId() == null ? null : Integer.valueOf(bo.getId()));
+        entity.setAuthorIdInt(bo.getUserId() == null ? null : Integer.valueOf(bo.getUserId()));
+
+        String originalUrl = bo.getOriginalUrl();
+        if (StringUtils.isNotBlank(originalUrl)) {
+            String picSuffix = originalUrl.substring(originalUrl.lastIndexOf(".") + 1);
+            entity.setPicSuffix(picSuffix);
+        }
+        // tags字段的值应该要从PixivArtworksInterfaceResultContentBO类的tagBOList字段拿，不是从这里获取
+
+        return entity;
     }
 
 }

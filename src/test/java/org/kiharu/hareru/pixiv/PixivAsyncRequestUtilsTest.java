@@ -6,6 +6,7 @@ import okhttp3.Callback;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.kiharu.hareru.entity.PixivAllPicture;
+import org.kiharu.hareru.entity.PixivPictureDetailInfo;
 
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -39,8 +40,8 @@ public class PixivAsyncRequestUtilsTest {
 
     @Test
     public void testGetRespHtmlFromArtworks() {
-        String pixivId = "1";
-        CopyOnWriteArrayList<PixivAllPicture> result = new CopyOnWriteArrayList<>();
+        String pixivId = "80385020";
+        CopyOnWriteArrayList<PixivPictureDetailInfo> result = new CopyOnWriteArrayList<>();
         Callback callback = PixivCallbackBuilder.getArtworksCallback(result);
         PixivAsyncRequestUtils.getRespHtmlFromArtworks(pixivId, callback);
 

@@ -25,7 +25,7 @@ public class PixivResultParserTest {
 
     @Test
     public void testParseArtworksResult() {
-        String pixivId = "80718122";
+        String pixivId = "75919281";
         String respHtml = PixivRequestUtils.getRespHtmlFromArtworksInterface(pixivId).orElse("");
         String content = PixivResultParser.getArtworksResultContent(respHtml);
         //log.info("pixivId={}获取到的返回结果为:\n{}", pixivId, content);
@@ -35,10 +35,10 @@ public class PixivResultParserTest {
 
     @Test
     public void testGetUrlsFromAjaxIllustPageResult() {
-        String pixivId = "80420349";
+        String pixivId = "75919281";
         String resp = PixivRequestUtils.getResponseFromAjaxIllustPage(pixivId).orElse("");
         List<String> result = PixivResultParser.getUrlsFromAjaxIllustPageResult(resp);
-        log.info("获取pixivId={}对应的所有图片的原始大图地址：\n{}", pixivId, JSONObject.toJSONString(result));
+        log.info("获取pixivId={}对应的所有图片的原始大图地址：\n{}\n\n\n获取的接口返回内容为：\n{}", pixivId, JSONObject.toJSONString(result), resp);
     }
 
     @Test

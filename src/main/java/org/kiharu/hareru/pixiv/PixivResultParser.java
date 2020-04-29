@@ -111,6 +111,7 @@ public class PixivResultParser {
             pictureDetailInfoBO.setCommentCount(jsonIllust.getInteger("commentCount"));
             pictureDetailInfoBO.setResponseCount(jsonIllust.getInteger("responseCount"));
             pictureDetailInfoBO.setViewCount(jsonIllust.getInteger("viewCount"));
+            // 该作者的所有插图ID
             pictureDetailInfoBO.setUserIllusts(userIllustIdList);
 
             JSONArray tagsArray = tags.getJSONArray("tags");

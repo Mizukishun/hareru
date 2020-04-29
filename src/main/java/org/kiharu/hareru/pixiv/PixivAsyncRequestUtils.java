@@ -37,6 +37,28 @@ public class PixivAsyncRequestUtils {
 
         // 异步网络请求
         client.newCall(request).enqueue(callback);
+    }
+
+    /**
+     * 获取pixivId对应的多张图片的接口返回内容
+     * 也即或取ajax/illust/{pixivId}/pages接口的返回结果
+     * https://www.pixiv.net/ajax/illust/80391469/pages
+     * @param pixivId
+     * @param callback
+     */
+    public static void getResponseFromAjaxIllustPage(String pixivId, Callback callback) {
+        StringBuffer url = new StringBuffer()
+                .append(PixivConstants.PIXIV_AJAX_ILLUST_PAGES_PREFIX)
+                .append(pixivId)
+                .append(PixivConstants.PIXIV_AJAX_ILLUST_PAGES_SUFFIX);
+        Headers headers = PixivHeadersUtils.getHeadersWithUserCookieAutoDecompress();
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .headers(headers)
+                .url(url.toString())
+                .build();
+        // 异步网络请求
+        client.newCall(request).enqueue(callback);
 
     }
 }

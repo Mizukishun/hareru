@@ -38,6 +38,4 @@ public class PixivAllPicture implements Serializable {
     private Date addTime;
     /** 更新时间 **/
     private Date updateTime;
-
-
 }

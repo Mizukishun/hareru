@@ -100,4 +100,10 @@ public class PixivConstants {
      */
     public static final Integer MAX_DIR_FILE_COUNT = 2;
 
+    /**
+     * 0-否，1-是
+     */
+    public static final Integer TRUE = 1;
+    public static final Integer FALSE = 0;
+
 }
