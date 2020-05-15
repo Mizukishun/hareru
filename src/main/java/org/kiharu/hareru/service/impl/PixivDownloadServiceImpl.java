@@ -248,7 +248,7 @@ public class PixivDownloadServiceImpl implements PixivDownloadService {
             @Override
             public void onResponse(Call call, Response response) {
                 // 下面这里new FileOutputStream(file)默认是按覆盖的方式进行写入的，也即如果之前已经有了同名文件，则会被新下载的覆盖掉之前的
-                try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));){
+                try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file))){
                     log.info("进入异步onResponse，url={}", url);
                     byte[] bytes = response.body().bytes();
                     bufferedOutputStream.write(bytes);

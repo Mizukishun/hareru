@@ -56,7 +56,7 @@ public class PixivInfoServiceImpl implements PixivInfoService {
             // 控制下每次都是请求的数量
             if (i > j * PixivConstants.ASYNC_MAX_REQUEST_COUNT) {
                 try {
-                    log.info("异步请求图片信息downloadPictureInfoByRange暂时修改10秒钟,i={}, j={}", i, j);
+                    log.info("异步请求图片信息downloadPictureInfoByRange暂时休眠10秒钟,i={}, j={}", i, j);
                     Thread.sleep(10000L);
                 } catch (InterruptedException e) {
                     log.error("线程休眠失败", e);
