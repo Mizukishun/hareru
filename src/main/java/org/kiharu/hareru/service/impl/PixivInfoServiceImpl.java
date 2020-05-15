@@ -2,6 +2,7 @@ package org.kiharu.hareru.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Callback;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.kiharu.hareru.bo.PixivAjaxIllustPagesUrlInfoBO;
 import org.kiharu.hareru.constant.PixivConstants;
@@ -105,19 +106,26 @@ public class PixivInfoServiceImpl implements PixivInfoService {
                 startPixivId, endPixivId, detailInfoList, pageCountMoreThanOnePixivIdDetailInfoMap, pageCountEqualsOneDetailInfoList);*/
         detailInfoList = null;
 
-        // 这里可以先执行一波插入
-        Integer insertCount = batchInsertPixivPictureDetailInfo(pageCountEqualsOneDetailInfoList);
-        log.info("下载pixivId从[{},{}]范围的图片信息成功，共插入{}条记录(阶段一)", startPixivId, endPixivId, insertCount);
+        Integer totalCount = 0;
+        Integer insertCount = 0;
+        Integer pageCountInsertCount = 0;
 
-        Integer pageCountInsertCount = downloadPageCountMoreThanOnePictures(pageCountMoreThanOnePixivIdDetailInfoMap);
+        // 这里可以先执行一波插入
+        if (CollectionUtils.isNotEmpty(pageCountEqualsOneDetailInfoList)) {
+            insertCount = batchInsertPixivPictureDetailInfo(pageCountEqualsOneDetailInfoList);
+        }
+
+        if (MapUtils.isNotEmpty(pageCountMoreThanOnePixivIdDetailInfoMap)) {
+            pageCountInsertCount = downloadPageCountMoreThanOnePictures(pageCountMoreThanOnePixivIdDetailInfoMap);
+        }
+        log.info("下载pixivId从[{},{}]范围的图片信息成功，共插入{}条记录(阶段一)", startPixivId, endPixivId, insertCount);
         log.info("下载pixivId从[{},{}]范围的图片信息成功，共插入{}条记录(阶段二)", startPixivId, endPixivId, pageCountInsertCount);
 
-        Integer totalCount = insertCount + pageCountInsertCount;
-
-        log.info("下载pixivId从[{}, {}]范围的图片信息，其中pageCount=1的有{}个pixivId，而pageCount>1的有{}个pixivId,其中pageCount=1总共插入了{}条记录，pageCount>1的总共插入了{}条记录",
+        log.info("下载pixivId从[{}, {}]范围的图片信息，其中pageCount=1的有{}个pixivId，而pageCount>1的有{}个pixivId；记录的插入：pageCount=1总共插入了{}条记录，pageCount>1的总共插入了{}条记录",
                 startPixivId, endPixivId, pageCountEqualsOneDetailInfoList.size(), pageCountMoreThanOnePixivIdDetailInfoMap.size(), insertCount, pageCountInsertCount);
 
         // TODO--采用异步请求的方式来针对pixivId对应图片信息的获取
+        totalCount = insertCount + pageCountInsertCount;
         return totalCount;
     }
 
@@ -141,6 +149,10 @@ public class PixivInfoServiceImpl implements PixivInfoService {
                 .reduce((item1, item2) -> item1 + item2)
                 .get();
 
+        Map<String, Integer> pixivIdPageCountMap = pixivIdDetailInfoMap.entrySet()
+                .stream()
+                .collect(Collectors.toMap(item -> item.getKey(), item -> item.getValue().getPageCount()));
+
         CopyOnWriteArrayList<PixivAjaxIllustPagesUrlInfoBO> pageCountInfoBOList = new CopyOnWriteArrayList<>();
         Integer moreThanOnePixivIdSize = pageCountMoreThanOnePixivIdList.size();
         /*for (String pixivId : pageCountMoreThanOnePixivIdList) {
@@ -160,16 +172,20 @@ public class PixivInfoServiceImpl implements PixivInfoService {
                 }
                 ++j;
             }
-            Callback callback = PixivCallbackBuilder.getCallbackFromAjaxIllustPage(pageCountInfoBOList);
+
             String pixivId = pageCountMoreThanOnePixivIdList.get(i);
+            Integer pageCount = pixivIdPageCountMap.containsKey(pixivId) ? pixivIdPageCountMap.get(pixivId) : 1;
+
+            Callback callback = PixivCallbackBuilder.getCallbackFromAjaxIllustPage(pageCountInfoBOList, pageCount);
             PixivAsyncRequestUtils.getResponseFromAjaxIllustPage(pixivId, callback);
         }
 
-        // 这里等待上面的异步请求全部处理完成
+        // 这里等待上面的异步请求全部处理完成--
+        // TODO--这里是导致出问题的地方！！！上面请求发生异常或错误的时候只会添加一个进去，但实际其可能对应多个的，所以这里会永远循环
         while (pageCountInfoBOList.size() < pageCountSum) {
             try {
-                Thread.sleep(5 * 1000);
-                log.info("获取pixivId对应多张图片的请求还未达到{}数量，等待5秒钟", pageCountSum);
+                Thread.sleep(30 * 1000);
+                log.info("获取pixivId对应多张图片的请求还未达到{}数量，等待30秒钟", pageCountSum);
             } catch (InterruptedException e) {
                 log.error("等待异步请求pixivId对应多张图片信息时出错", e);
                 break;

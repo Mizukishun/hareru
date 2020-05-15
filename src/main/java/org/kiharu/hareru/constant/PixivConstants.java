@@ -119,6 +119,6 @@ public class PixivConstants {
     /**
      * 异步请求时同时最大的请求数量
      */
-    public static final Integer ASYNC_MAX_REQUEST_COUNT = 50;
+    public static final Integer ASYNC_MAX_REQUEST_COUNT = 200;
 
 }

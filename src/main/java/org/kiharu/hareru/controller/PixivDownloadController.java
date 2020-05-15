@@ -144,8 +144,11 @@ public class PixivDownloadController {
      */
     @GetMapping("/downloadPictureInfoByRange")
     public String downloadPictureInfoByRange(@RequestParam("startPixivId")Integer startPixivId, @RequestParam("endPixivId")Integer endPixivId) {
+        long beginTime = System.currentTimeMillis();
         Integer totalCount = pixivInfoService.downloadPictureInfoByRange(startPixivId, endPixivId);
         log.info("下载了范围为[{},{}]的pixivId的图片信息到数据库表pixiv_picture_detail_info中，总共插入了{}条记录", startPixivId, endPixivId, totalCount);
+        long endTime = System.currentTimeMillis();
+        log.info("下载pixivId在[{}, {}]范围的图片信息总共花费了{}ms的时间，也即{}s", startPixivId, endPixivId, endTime - beginTime, (endTime - beginTime) / 1000);
         return "SUCCESS";
     }
 

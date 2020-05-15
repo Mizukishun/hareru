@@ -17,6 +17,7 @@ import org.kiharu.hareru.enums.PixivPictureRequestStatusEnum;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -108,7 +109,7 @@ public class PixivCallbackBuilder {
      * 也即针对pixivId获取其对应多张图片信息的接口
      * @return
      */
-    public static Callback getCallbackFromAjaxIllustPage(CopyOnWriteArrayList<PixivAjaxIllustPagesUrlInfoBO> result) {
+    public static Callback getCallbackFromAjaxIllustPage(CopyOnWriteArrayList<PixivAjaxIllustPagesUrlInfoBO> result, Integer pageCount) {
 
         Callback callback = new Callback() {
             @Override
@@ -119,8 +120,13 @@ public class PixivCallbackBuilder {
                     Integer code = response.code();
                     String message = response.message();
                     log.error("请求获取多张图片地址信息{}接口失败，code={},message={}", url, code, message);
-                    PixivAjaxIllustPagesUrlInfoBO emptyBO = new PixivAjaxIllustPagesUrlInfoBO();
-                    result.add(emptyBO);
+
+                    List<PixivAjaxIllustPagesUrlInfoBO> emptyBOList = new ArrayList<>();
+                    for (int i = 0; i < pageCount; ++i) {
+                        PixivAjaxIllustPagesUrlInfoBO emptyBO = new PixivAjaxIllustPagesUrlInfoBO();
+                        emptyBOList.add(emptyBO);
+                    }
+                    result.addAll(emptyBOList);
                 } else {
                     // 如果请求获取成功，则需要进一步解析出多张图片地址信息
                     try(BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(response.body().byteStream(), "UTF-8"))) {
@@ -128,11 +134,17 @@ public class PixivCallbackBuilder {
                         List<PixivAjaxIllustPagesUrlInfoBO> boList = PixivResultParser.getUrlsInfoFromAjaxIllustPageResult(respJSONStr);
                         result.addAll(boList);
 
-                        log.info("异步请求获取多张图片地址信息ajax/illust/.../pages接口的结果成功，url=", url);
+                        log.info("异步请求获取多张图片地址信息ajax/illust/.../pages接口的结果成功，url={}", url);
                         bufferedReader.close();
                     } catch (IOException ioe) {
-                        PixivAjaxIllustPagesUrlInfoBO emptyBO = new PixivAjaxIllustPagesUrlInfoBO();
-                        result.add(emptyBO);
+                        /*PixivAjaxIllustPagesUrlInfoBO emptyBO = new PixivAjaxIllustPagesUrlInfoBO();
+                        result.add(emptyBO);*/
+                        List<PixivAjaxIllustPagesUrlInfoBO> emptyBOList = new ArrayList<>();
+                        for (int i = 0; i < pageCount; ++i) {
+                            PixivAjaxIllustPagesUrlInfoBO emptyBO = new PixivAjaxIllustPagesUrlInfoBO();
+                            emptyBOList.add(emptyBO);
+                        }
+                        result.addAll(emptyBOList);
                         StringBuilder msg = new  StringBuilder()
                                 .append("获取多张图片url=")
                                 .append(url)
@@ -145,8 +157,14 @@ public class PixivCallbackBuilder {
             }
             @Override
             public void onFailure(Call call, IOException ex) {
-                PixivAjaxIllustPagesUrlInfoBO emptyBO = new PixivAjaxIllustPagesUrlInfoBO();
-                result.add(emptyBO);
+                /*PixivAjaxIllustPagesUrlInfoBO emptyBO = new PixivAjaxIllustPagesUrlInfoBO();
+                result.add(emptyBO);*/
+                List<PixivAjaxIllustPagesUrlInfoBO> emptyBOList = new ArrayList<>();
+                for (int i = 0; i < pageCount; ++i) {
+                    PixivAjaxIllustPagesUrlInfoBO emptyBO = new PixivAjaxIllustPagesUrlInfoBO();
+                    emptyBOList.add(emptyBO);
+                }
+                result.addAll(emptyBOList);
                 log.error("请求获取多张图片地址失败，进入onFailure方法", ex);
             }
         };
