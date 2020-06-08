@@ -5,13 +5,7 @@ import okhttp3.*;
 import org.kiharu.hareru.constant.PixivConstants;
 import org.kiharu.hareru.util.PixivHeadersUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.sql.Time;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * 异步请求获取Pixiv的相关信息

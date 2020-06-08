@@ -77,4 +77,22 @@ public class PixivHeadersUtils {
         Headers headers = Headers.of(map);
         return headers;
     }
+
+
+    public static Headers getDmhyCommonHeaders() {
+        Map<String, String> map = new HashMap<>();
+        map.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+        //map.put("Accept-Encoding", "gzip, deflate, br");
+        map.put("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8");
+        map.put("Connection", "keep-alive");
+        map.put("Host", "share.dmhy.org");
+        map.put("Sec-Fetch-Dest", "document");
+        map.put("Sec-Fetch-Mode", "navigate");
+        map.put("Sec-Fetch-Site", "none");
+        map.put("Upgrade-Insecure-Requests", "1");
+        map.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36");
+
+        Headers headers = Headers.of(map);
+        return headers;
+    }
 }
